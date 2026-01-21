@@ -1,0 +1,7 @@
+.anchor
+.sbf-solana-solana-full-test
+target
+**/*.rs.bk
+node_modules
+.env
+.DS_Store

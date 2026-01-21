@@ -1,0 +1,49 @@
+[toolchain]
+package_manager = "yarn"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
+
+[programs.localnet]
+timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run mocha -t 1000000 tests/"
+
+[test]
+startup_wait = 60000
+shutdown_wait = 2000
+upgradeable = false
+
+[[test.genesis]]
+address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+program = "test-programs/spl_token.so"
+upgradeable = true
+
+[[test.genesis]]
+address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+program = "test-programs/associated_token.so"
+upgradeable = true
+
+[test.validator]
+bind_address = "127.0.0.1"
+url = "https://api.devnet.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
+
+[[test.validator.clone]]
+address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
+[[test.validator.clone]]
+address = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
