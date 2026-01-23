@@ -8,33 +8,33 @@ The following state machine represents the deterministic flow of every ticket:
 
 ```mermaid
 flowchart TD
-  Start((COMMIT\nTicket Created))
+  Start((COMMIT<br/>Ticket Created))
 
   subgraph WAIT[WAIT PHASE]
     direction TB
-    PENDING[PENDING\nStake Escrowed - Waiting for Oracle Pulse]
+    PENDING[PENDING<br/>Stake Escrowed - Waiting for Oracle Pulse]
   end
 
   subgraph REVEAL[REVEAL PHASE]
     direction TB
-    REVEAL_NOW[REVEAL NOW\nPulse Published - Reveal Window Open]
+    REVEAL_NOW[REVEAL NOW<br/>Pulse Published - Reveal Window Open]
   end
 
   subgraph RESULT[SETTLEMENT PHASE]
     direction TB
-    REVEALED[REVEALED\nGuess Submitted On-chain]
-    WIN[WIN\nCorrect Prediction]
-    BURN_LOSS[LOSS\nStake Collected/Burned]
-    CLAIM_PRIZE[CLAIM PRIZE\nRewards liquid after Settlement]
-    CLAIMED[CLAIMED\nStake Refunded + Reward]
-    SWEPT[SWEPT\nGrace Period Expired\nProtocol Reclaims Funds]
-    EXPIRED[EXPIRED\nFailure to Reveal - Stake Lost]
+    REVEALED[REVEALED<br/>Guess Submitted On-chain]
+    WIN[WIN<br/>Correct Prediction]
+    BURN_LOSS[LOSS<br/>Stake Collected/Burned]
+    CLAIM_PRIZE[CLAIM PRIZE<br/>Rewards liquid after Settlement]
+    CLAIMED[CLAIMED<br/>Stake Refunded + Reward]
+    SWEPT[SWEPT<br/>Grace Period Expired<br/>Protocol Reclaims Funds]
+    EXPIRED[EXPIRED<br/>Failure to Reveal - Stake Lost]
   end
 
   subgraph RECOVERY[RECOVERY PHASE]
     direction TB
-    REFUND_AVAILABLE[REFUND AVAILABLE\nOracle Failure / Timeout]
-    REFUNDED[REFUNDED\nStake Reclaimed by User]
+    REFUND_AVAILABLE[REFUND AVAILABLE<br/>Oracle Failure / Timeout]
+    REFUNDED[REFUNDED<br/>Stake Reclaimed by User]
   end
 
   End((END))
