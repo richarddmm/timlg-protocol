@@ -14,10 +14,8 @@ pub use errors::*;
 pub use contexts::*;
 pub use constants::*;
 
-#[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
-#[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
     // Required fields
     name: "TIMLG MVP",
