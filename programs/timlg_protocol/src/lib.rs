@@ -26,8 +26,7 @@ security_txt! {
     // Optional fields
     preferred_languages: "en,es",
     source_code: "https://github.com/richarddmm/timlg-protocol",
-    auditors: "None",
-    acknowledgements: "https://github.com/richarddmm/timlg-protocol/blob/main/ACKNOWLEDGEMENTS.md"
+    auditors: "None"
 }
 
 
