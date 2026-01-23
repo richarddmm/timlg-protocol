@@ -16,6 +16,14 @@ The protocol is designed to measure "predictability under strict anti-leakage co
 3. **Reveal**: Users decrypt their guess to prove its validity.
 4. **Settle**: The program deterministically settles winners and handles tokenomics (Burn/Mint).
 
+## Infrastructure
+
+This repository includes a professional **Oracle Showcase** (located in the [/oracle](./oracle) directory) demonstrating the automated off-chain infrastructure:
+
+- **Automated Settlement**: Scripts for finalized round settlement and token distribution.
+- **Pulse Publisher**: Logic for NIST Randomness Beacon integration and on-chain pulse publishing.
+- **Docker Ready**: Production-grade containerization for high-availability oracle operations.
+
 ## Key Links
 
 - **Official Website**: [https://timlg.org](https://timlg.org)

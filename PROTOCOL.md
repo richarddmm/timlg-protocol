@@ -84,3 +84,10 @@ flowchart TD
 5.  **EXPIRED**: The user failed to reveal within the reveal window. The account risk is handled by the protocol.
 6.  **SWEPT**: A winning prize was ready but the user failed to claim it within the configured grace period. The protocol authority executes a sweep to recover the funds.
 7.  **REFUND AVAILABLE**: An emergency state triggered if the Oracle fails to provide the pulse within the expected slot window (+150 slots). Users can reclaim their stake.
+
+## Implementation References
+
+The automated logic for this protocol is implemented in the [/oracle](./oracle) directory:
+- **Round Maintenance**: See `create_round_auto_devnet.js`.
+- **Pulse Publishing**: See `run_oracle_devnet.js` and `nist.js`.
+- **Settlement Engine**: See `settle_round_tokens_auto_devnet.js`.
