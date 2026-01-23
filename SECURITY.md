@@ -1,35 +1,33 @@
 # Security Policy
 
-## Supported Versions
+## Vulnerability Reporting
 
-The following versions of the TIMLG Protocol are currently being supported with security updates:
+The TIME LOG (TIMLG) team takes the security of our protocol seriously. If you believe you have found a security vulnerability in our smart contracts or infrastructure, please report it to us as soon as possible.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
-
-## Reporting a Vulnerability
-
-We take the security of the TIMLG Protocol very seriously. If you have found a vulnerability, please report it to us immediately.
-
-### How to Report
-
-Please do **NOT** open a public issue on GitHub. Instead, please report the issue securely using one of the following methods:
-
-1. **Email**: Send your report to `support@timlg.org`.
-2. **GitHub Security Advisories**: If you have access, you may use the "Report a vulnerability" button in the Security tab.
+### Reporting Process
+- **Email**: Send your report to [support@timlg.org](mailto:support@timlg.org).
+- **GitHub Issues**: For non-critical bugs, you can use our [Issue Tracker](https://github.com/richarddmm/timlg-protocol/issues).
+- **Official Docs**: Detailed security posture and authority surfaces can be found in our [Security & Control Documentation](https://timlg.org/security/).
 
 ### What to Include
-
+- Affected component (implementation, docs, or spec).
 - A detailed description of the vulnerability.
-- Steps to reproduce the issue.
-- Potential impact of the vulnerability.
-- Any proof of concept (PoC) code or screenshots.
+- Steps to reproduce the issue (PoC code is highly appreciated).
+- Any potential impact you've identified.
 
-### Response Timeline
+## Responsible Disclosure Policy
 
-- We will acknowledge receipt of your report within 48 hours.
-- We will provide regular updates on the status of the investigation and fix.
-- We aim to resolve all critical vulnerabilities within 14 days.
+We ask that you follow the principles of responsible disclosure:
+- **Privacy**: Do not access or modify data that does not belong to you.
+- **Patience**: Give us a reasonable amount of time to fix the issue before sharing any information publicly.
+- **No Disruption**: Avoid using tools or techniques that could disrupt the service for other users.
+- **Reference**: See our full [Disclosure Guidelines](https://timlg.org/security/disclosure/) for more details.
 
-Thank you for helping keep the TIMLG Protocol safe!
+## Supported Versions
+
+We provide security updates for the following versions:
+
+| Version | Supported |
+| ------- | --------- |
+| 0.1.x   | ✅ Yes     |
+| < 0.1.0 | ❌ No      |

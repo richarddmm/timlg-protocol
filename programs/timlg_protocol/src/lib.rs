@@ -25,8 +25,7 @@ security_txt! {
 
     // Optional fields
     preferred_languages: "en,es",
-    source_code: "https://github.com/richarddmm/timlg-protocol",
-    auditors: "None"
+    source_code: "https://github.com/richarddmm/timlg-protocol"
 }
 
 
