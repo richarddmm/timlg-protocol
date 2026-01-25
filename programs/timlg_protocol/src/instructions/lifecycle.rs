@@ -9,7 +9,7 @@ use crate::{SettleRoundTokens, TICKET_SEED, ROUND_SEED};
 use crate::{
     errors::TimlgError,
     state::RoundState,
-    FinalizeRound, SweepUnclaimed, CloseRound, RecoverFunds, VAULT_SEED,
+    FinalizeRound, SweepUnclaimed, CloseRound, RecoverFunds, RecoverFundsAnyone, VAULT_SEED,
 };
 
 pub fn finalize_round(ctx: Context<FinalizeRound>, round_id: u64) -> Result<()> {
