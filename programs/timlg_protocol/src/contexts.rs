@@ -611,6 +611,61 @@ pub struct RecoverFunds<'info> {
 
 #[derive(Accounts)]
 #[instruction(round_id: u64)]
+pub struct RecoverFundsAnyone<'info> {
+    #[account(
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    #[account(
+        mut,
+        seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
+        bump = round.bump
+    )]
+    pub round: Account<'info, Round>,
+
+    #[account(
+        mut,
+        seeds = [crate::TICKET_SEED, round_id.to_le_bytes().as_ref(), user.key().as_ref(), ticket.nonce.to_le_bytes().as_ref()],
+        bump = ticket.bump,
+        has_one = user,
+        close = user
+    )]
+    pub ticket: Account<'info, Ticket>,
+
+    /// CHECK: The user who owns the ticket (receiver of refund).
+    #[account(mut)]
+    pub user: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        token::mint = timlg_mint,
+        token::authority = user,
+    )]
+    pub user_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        seeds = [crate::TIMLG_VAULT_SEED, round_id.to_le_bytes().as_ref()],
+        bump = round.timlg_vault_bump,
+        token::mint = timlg_mint,
+        token::authority = round,
+    )]
+    pub timlg_vault: Account<'info, TokenAccount>,
+
+    #[account(address = config.timlg_mint)]
+    pub timlg_mint: Account<'info, Mint>,
+
+    #[account(mut)]
+    pub cranker: Signer<'info>,
+
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(round_id: u64)]
 pub struct SweepUnclaimed<'info> {
     #[account(
         seeds = [crate::CONFIG_SEED],
@@ -633,7 +688,7 @@ pub struct SweepUnclaimed<'info> {
     )]
     pub vault: UncheckedAccount<'info>,
 
-    /// ✅ NUEVO: destino del sweep = treasury SOL PDA (lamports)
+    /// ✅ SOL destination
     /// CHECK: System-owned PDA. Address enforced by seeds/bump + address=config.treasury_sol
     #[account(
         mut,
@@ -643,7 +698,31 @@ pub struct SweepUnclaimed<'info> {
     )]
     pub treasury_sol: UncheckedAccount<'info>,
 
+    /// ✅ SPL vault per round
+    #[account(
+        mut,
+        seeds = [crate::TIMLG_VAULT_SEED, round_id.to_le_bytes().as_ref()],
+        bump = round.timlg_vault_bump,
+        token::mint = timlg_mint,
+        token::authority = round
+    )]
+    pub timlg_vault: Account<'info, TokenAccount>,
+
+    /// ✅ SPL destination (from config)
+    #[account(
+        mut,
+        seeds = [crate::TREASURY_SEED],
+        bump = config.treasury_bump,
+        token::mint = timlg_mint,
+        token::authority = config
+    )]
+    pub treasury: Account<'info, TokenAccount>,
+
+    #[account(address = config.timlg_mint)]
+    pub timlg_mint: Account<'info, Mint>,
+
     pub admin: Signer<'info>,
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 

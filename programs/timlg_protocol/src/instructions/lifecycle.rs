@@ -54,41 +54,48 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         .saturating_add(cfg.claim_grace_slots);
     require!(current_slot > min_sweep_slot, TimlgError::SweepTooEarly);
 
-    // sanity: vault in round must match passed vault
-    require_keys_eq!(
-        round.vault,
-        ctx.accounts.vault.key(),
-        TimlgError::VaultPdaMismatch
-    );
-
+    // 1) SOL Sweep (Rent)
     let vault_lamports = ctx.accounts.vault.to_account_info().lamports();
+    if vault_lamports > 0 {
+        let ix = system_instruction::transfer(
+            &ctx.accounts.vault.key(),
+            &ctx.accounts.treasury_sol.key(),
+            vault_lamports,
+        );
 
-    if vault_lamports == 0 {
-        // ✅ even if empty, mark swept to make it idempotent
-        round.swept = true;
-        round.swept_slot = current_slot;
-        return Ok(());
+        let round_le = round_id.to_le_bytes();
+        let signer_seeds: &[&[u8]] = &[VAULT_SEED, &round_le, &[round.vault_bump]];
+
+        invoke_signed(
+            &ix,
+            &[
+                ctx.accounts.vault.to_account_info(),
+                ctx.accounts.treasury_sol.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[signer_seeds],
+        )?;
     }
 
-    // ✅ destino del sweep = treasury SOL PDA
-    let ix = system_instruction::transfer(
-        &ctx.accounts.vault.key(),
-        &ctx.accounts.treasury_sol.key(),
-        vault_lamports,
-    );
+    // 2) Token Sweep (Treasury SPL)
+    let vault_tokens = ctx.accounts.timlg_vault.amount;
+    if vault_tokens > 0 {
+        let round_le = round_id.to_le_bytes();
+        let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
 
-    let round_le = round_id.to_le_bytes();
-    let signer_seeds: &[&[u8]] = &[VAULT_SEED, &round_le, &[round.vault_bump]];
-
-    invoke_signed(
-        &ix,
-        &[
-            ctx.accounts.vault.to_account_info(),
-            ctx.accounts.treasury_sol.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
-        &[signer_seeds],
-    )?;
+        token::transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.timlg_vault.to_account_info(),
+                    to: ctx.accounts.treasury.to_account_info(),
+                    authority: round.to_account_info(),
+                },
+                signer_seeds,
+            ),
+            vault_tokens,
+        )?;
+    }
 
     // ✅ mark swept
     round.swept = true;
@@ -323,6 +330,50 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
 
     // Update round stats
     // We are effectively "un-committing" this ticket.
+    if round.committed_count > 0 {
+        round.committed_count -= 1;
+    }
+
+    Ok(())
+}
+
+pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> Result<()> {
+    let cfg = &ctx.accounts.config;
+    let round = &mut ctx.accounts.round;
+    require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
+    require!(!round.finalized, TimlgError::AlreadyFinalized);
+
+    let current_slot = Clock::get()?.slot;
+    let timeout_slots = REFUND_TIMEOUT_SLOTS;
+
+    require!(
+        current_slot > round.reveal_deadline_slot.saturating_add(timeout_slots),
+        TimlgError::RefundTooEarly
+    );
+
+    let ticket = &ctx.accounts.ticket;
+    require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);
+
+    // Refund: Transfer Stake from Vault -> User
+    let stake_amount = cfg.stake_amount;
+
+    let round_le = round_id.to_le_bytes();
+    let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
+
+    token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.timlg_vault.to_account_info(),
+                to: ctx.accounts.user_token_account.to_account_info(),
+                authority: round.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        stake_amount,
+    )?;
+
+    // Update round stats
     if round.committed_count > 0 {
         round.committed_count -= 1;
     }

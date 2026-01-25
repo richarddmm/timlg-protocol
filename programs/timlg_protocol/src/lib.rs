@@ -127,6 +127,10 @@ pub mod timlg_protocol {
         lifecycle::recover_funds(ctx, round_id)
     }
 
+    pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> Result<()> {
+        lifecycle::recover_funds_anyone(ctx, round_id)
+    }
+
     // core
     pub fn commit_ticket(
         ctx: Context<CommitTicket>,
