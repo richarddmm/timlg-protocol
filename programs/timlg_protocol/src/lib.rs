@@ -30,7 +30,7 @@ security_txt! {
 
 
 
-declare_id!("7k3C34rSkzDhpRhjBHFVZDKcVcV8VciG5kRDpn2334mw");
+declare_id!("DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR");
 
 #[program]
 pub mod timlg_protocol {

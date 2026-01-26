@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-timlg_protocol = "7k3C34rSkzDhpRhjBHFVZDKcVcV8VciG5kRDpn2334mw"
+timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
 
 [programs.localnet]
 timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
