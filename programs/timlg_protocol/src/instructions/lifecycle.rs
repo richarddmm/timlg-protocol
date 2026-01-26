@@ -304,6 +304,9 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         TimlgError::RefundTooEarly
     );
 
+    // SECURITY: Cannot refund if pulse is already set (outcome determined), even if not finalized yet.
+    require!(!round.pulse_set, TimlgError::PulseAlreadySet);
+
     let ticket = &ctx.accounts.ticket;
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
     require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);

@@ -39,6 +39,13 @@ pub fn set_pulse_signed(ctx: Context<SetPulseSigned>, round_id: u64, pulse: [u8;
     // This allows the round to remain in "PulseNotSet" state so users can Refund.
     // Buffer: 50 slots (~20s) to give users at least some time to reveal.
     let min_reveal_window = 50;
+    
+    // Debug info for diagnosing late pulses
+    if current_slot >= round.reveal_deadline_slot.saturating_sub(min_reveal_window) {
+        msg!("PulseTooLate Triggered: current={} deadline={} limit={}", 
+            current_slot, round.reveal_deadline_slot, round.reveal_deadline_slot.saturating_sub(min_reveal_window));
+    }
+
     require!(
         current_slot < round.reveal_deadline_slot.saturating_sub(min_reveal_window),
         TimlgError::PulseTooLate
