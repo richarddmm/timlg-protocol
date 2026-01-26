@@ -34,6 +34,16 @@ pub fn set_pulse_signed(ctx: Context<SetPulseSigned>, round_id: u64, pulse: [u8;
     require!(current_slot >= round.commit_deadline_slot, TimlgError::CommitClosed);
     require!(!round.finalized, TimlgError::RoundFinalized);
 
+    // Liveness Hazard Check:
+    // If we are too close to (or past) the reveal deadline, we must reject the pulse.
+    // This allows the round to remain in "PulseNotSet" state so users can Refund.
+    // Buffer: 50 slots (~20s) to give users at least some time to reveal.
+    let min_reveal_window = 50;
+    require!(
+        current_slot < round.reveal_deadline_slot.saturating_sub(min_reveal_window),
+        TimlgError::PulseTooLate
+    );
+
     // one-shot
     require!(!round.pulse_set, TimlgError::PulseAlreadySet);
 

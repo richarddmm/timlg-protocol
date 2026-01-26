@@ -162,4 +162,7 @@ pub enum TimlgError {
 
     #[msg("Ticket already processed")]
     TicketAlreadyProcessed,
+
+    #[msg("Pulse too late (liveness hazard)")]
+    PulseTooLate,
 }
