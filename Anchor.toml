@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
+timlg_protocol = "GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP"
 
 [programs.localnet]
-timlg_protocol = "DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR"
+timlg_protocol = "GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP"
 
 [registry]
 url = "https://api.apr.dev"

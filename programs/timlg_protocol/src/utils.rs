@@ -19,30 +19,30 @@ use crate::{
 // -----------------
 // Seeds / constants
 // -----------------
-pub const ROUND_REGISTRY_SEED: &[u8] = b"round_registry";
+pub const ROUND_REGISTRY_SEED: &[u8] = b"round_registry_v3";
 
-pub const CONFIG_SEED: &[u8] = b"config";
-pub const ROUND_SEED: &[u8] = b"round";
-pub const VAULT_SEED: &[u8] = b"vault";
-pub const TICKET_SEED: &[u8] = b"ticket";
+pub const CONFIG_SEED: &[u8] = b"config_v3";
+pub const ROUND_SEED: &[u8] = b"round_v3";
+pub const VAULT_SEED: &[u8] = b"vault_v3";
+pub const TICKET_SEED: &[u8] = b"ticket_v3";
 
-pub const TREASURY_SEED: &[u8] = b"treasury";
-pub const TIMLG_VAULT_SEED: &[u8] = b"timlg_vault";
-pub const TREASURY_SOL_SEED: &[u8] = b"treasury_sol";
+pub const TREASURY_SEED: &[u8] = b"treasury_v3";
+pub const TIMLG_VAULT_SEED: &[u8] = b"timlg_vault_v3";
+pub const TREASURY_SOL_SEED: &[u8] = b"treasury_sol_v3";
 
 pub const MAX_BATCH: usize = 16;
 
-pub const USER_ESCROW_SEED: &[u8] = b"user_escrow";
-pub const USER_ESCROW_VAULT_SEED: &[u8] = b"user_escrow_vault";
+pub const USER_ESCROW_SEED: &[u8] = b"user_escrow_v3";
+pub const USER_ESCROW_VAULT_SEED: &[u8] = b"user_escrow_vault_v3";
 
 // OracleSet
-pub const ORACLE_SET_SEED: &[u8] = b"oracle_set";
+pub const ORACLE_SET_SEED: &[u8] = b"oracle_set_v3";
 pub const MAX_ORACLES: usize = 16;
 
 // Tokenomics
-pub const TOKENOMICS_SEED: &[u8] = b"tokenomics";
-pub const REWARD_FEE_POOL_SEED: &[u8] = b"reward_fee_pool";
-pub const REPLICATION_POOL_SEED: &[u8] = b"replication_pool";
+pub const TOKENOMICS_SEED: &[u8] = b"tokenomics_v3";
+pub const REWARD_FEE_POOL_SEED: &[u8] = b"reward_fee_pool_v3";
+pub const REPLICATION_POOL_SEED: &[u8] = b"replication_pool_v3";
 
 
 // ---------------

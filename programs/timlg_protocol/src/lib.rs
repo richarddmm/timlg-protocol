@@ -30,7 +30,7 @@ security_txt! {
 
 
 
-declare_id!("DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR");
+declare_id!("GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP");
 
 #[program]
 pub mod timlg_protocol {
@@ -43,7 +43,16 @@ pub mod timlg_protocol {
         commit_window_slots: u64,
         reveal_window_slots: u64,
     ) -> Result<()> {
-        admin::initialize_config(ctx, stake_amount, commit_window_slots, reveal_window_slots)
+        admin::initialize_config(
+            ctx,
+            stake_amount,
+            commit_window_slots,
+            reveal_window_slots,
+        )
+    }
+
+    pub fn close_config(ctx: Context<CloseConfig>) -> Result<()> {
+        instructions::admin::close_config(ctx)
     }
 
     pub fn set_pause(ctx: Context<SetPause>, paused: bool) -> Result<()> {
@@ -131,6 +140,10 @@ pub mod timlg_protocol {
         lifecycle::recover_funds_anyone(ctx, round_id)
     }
 
+    pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, nonce: u64) -> Result<()> {
+        lifecycle::close_ticket(ctx, round_id, nonce)
+    }
+
     // core
     pub fn commit_ticket(
         ctx: Context<CommitTicket>,
@@ -190,6 +203,10 @@ pub mod timlg_protocol {
 
     pub fn set_claim_grace_slots(ctx: Context<SetClaimGraceSlots>, claim_grace_slots: u64) -> Result<()> {
         admin::set_claim_grace_slots(ctx, claim_grace_slots)
+    }
+
+    pub fn update_stake_amount(ctx: Context<UpdateStakeAmount>, new_stake_amount: u64) -> Result<()> {
+        admin::update_stake_amount(ctx, new_stake_amount)
     }
 
     pub fn init_user_escrow(ctx: Context<InitUserEscrow>) -> Result<()> {

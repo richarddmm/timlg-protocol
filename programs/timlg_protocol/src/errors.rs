@@ -163,6 +163,13 @@ pub enum TimlgError {
     #[msg("Ticket already processed")]
     TicketAlreadyProcessed,
 
+
+    #[msg("Ticket not processed yet")]
+    TicketNotProcessed,
+
+    #[msg("Winner must claim reward first")]
+    WinnerMustClaimFirst,
+
     #[msg("Pulse too late (liveness hazard)")]
     PulseTooLate,
 }

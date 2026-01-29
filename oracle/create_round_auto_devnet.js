@@ -193,7 +193,7 @@ async function main() {
   if (!ix) die("IDL does not contain create_round_auto / createRoundAuto");
 
   // ---- PDAs ----
-  const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
+  const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config_v3")], programId);
 
   // ---- Decode Config to resolve timlg_mint (avoid stale hardcoded mint) ----
   const cfgInfo = await connection.getAccountInfo(configPda, "confirmed");
@@ -230,7 +230,7 @@ async function main() {
   }
 
   const [roundRegistryPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("round_registry"), configPda.toBuffer()],
+    [Buffer.from("round_registry_v3"), configPda.toBuffer()],
     programId
   );
 
@@ -280,10 +280,10 @@ async function main() {
 
   // per-round PDAs
   const roundLe = roundIdBn.toArrayLike(Buffer, "le", 8);
-  const [roundPda] = PublicKey.findProgramAddressSync([Buffer.from("round"), roundLe], programId);
-  const [vaultPda] = PublicKey.findProgramAddressSync([Buffer.from("vault"), roundLe], programId);
+  const [roundPda] = PublicKey.findProgramAddressSync([Buffer.from("round_v3"), roundLe], programId);
+  const [vaultPda] = PublicKey.findProgramAddressSync([Buffer.from("vault_v3"), roundLe], programId);
   const [timlgVaultPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("timlg_vault"), roundLe],
+    [Buffer.from("timlg_vault_v3"), roundLe],
     programId
   );
 

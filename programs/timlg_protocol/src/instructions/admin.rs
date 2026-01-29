@@ -7,7 +7,7 @@ use anchor_spl::token::spl_token::instruction::AuthorityType;
 use crate::errors::TimlgError;
 use crate::state::{Config, RoundState};
 use crate::{
-    CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause,
+    CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
 };
 use crate::InitializeTokenomics;
 use crate::VAULT_SEED;
@@ -37,7 +37,7 @@ pub fn initialize_tokenomics(
     tok.replication_pool = ctx.accounts.replication_pool.key();
     tok.replication_pool_bump = ctx.bumps.replication_pool;
 
-    tok.version = 1;
+    tok.version = INITIAL_VERSION;
 
     Ok(())
 }
@@ -50,7 +50,7 @@ pub fn initialize_round_registry(ctx: Context<InitializeRoundRegistry>, start_ro
     rr.admin = cfg.admin;
     rr.bump = ctx.bumps.round_registry;
     rr.next_round_id = start_round_id;
-    rr.version = 1;
+    rr.version = INITIAL_VERSION;
 
     Ok(())
 }
@@ -145,10 +145,10 @@ pub fn initialize_config(
     cfg.reveal_window_slots = reveal_window_slots;
 
     // defaults seguros
-    cfg.claim_grace_slots = 0;
+    cfg.claim_grace_slots = DEFAULT_CLAIM_GRACE_SLOTS;
     cfg.oracle_pubkey = Pubkey::default(); // <- NO Option
     cfg.paused = false;
-    cfg.version = 1;
+    cfg.version = INITIAL_VERSION;
 
     // SPL token plumbing
     cfg.timlg_mint = ctx.accounts.timlg_mint.key();
@@ -301,3 +301,22 @@ pub fn set_claim_grace_slots(ctx: Context<SetClaimGraceSlots>, claim_grace_slots
     cfg.claim_grace_slots = claim_grace_slots;
     Ok(())
 }
+
+use crate::CloseConfig;
+
+pub fn close_config(_ctx: Context<CloseConfig>) -> Result<()> {
+    // The account closing is handled by the `close = admin` constraint in the context.
+    Ok(())
+}
+
+pub fn update_stake_amount(ctx: Context<UpdateStakeAmount>, new_stake_amount: u64) -> Result<()> {
+    require!(new_stake_amount > 0, TimlgError::InvalidStakeAmount);
+
+    let cfg = &mut ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+
+    cfg.stake_amount = new_stake_amount;
+    
+    Ok(())
+}
+

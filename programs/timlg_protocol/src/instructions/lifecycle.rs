@@ -9,7 +9,7 @@ use crate::{SettleRoundTokens, TICKET_SEED, ROUND_SEED};
 use crate::{
     errors::TimlgError,
     state::RoundState,
-    FinalizeRound, SweepUnclaimed, CloseRound, RecoverFunds, RecoverFundsAnyone, VAULT_SEED,
+    FinalizeRound, SweepUnclaimed, CloseRound, RecoverFunds, RecoverFundsAnyone, CloseTicket, VAULT_SEED,
 };
 
 pub fn finalize_round(ctx: Context<FinalizeRound>, round_id: u64) -> Result<()> {
@@ -337,6 +337,42 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         round.committed_count -= 1;
     }
 
+    Ok(())
+}
+
+
+pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Result<()> {
+    // 1. Verify Config/Pause
+    let cfg = &ctx.accounts.config;
+    require!(!cfg.paused, TimlgError::Paused);
+
+    // 2. Validate Round & Ticket
+    let ticket = &ctx.accounts.ticket;
+    require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
+
+    // 3. Logic: When can you close (recover rent)?
+    //    Ideally, when the ticket is fully "done" (processed).
+    //    Or if the round is finalized and cleaned up.
+    
+    // Check if round is "alive"
+    let round_alive = ctx.accounts.round.lamports() > 0;
+
+    if round_alive {
+        // If round is alive, we enforce processing to ensure no double-claiming or skipping settlement.
+        if ticket.processed {
+            if ticket.win {
+                require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+            }
+            // If !win, allowed.
+        } else {
+            return Err(error!(TimlgError::TicketNotProcessed));
+        }
+    } else {
+        // If round is dead (deleted/archived), allow closing any ticket to reclaim rent.
+        // It's safe because the round state no longer exists to pay out rewards.
+    }
+
+    // Context `close = user` handles the lamport transfer.
     Ok(())
 }
 

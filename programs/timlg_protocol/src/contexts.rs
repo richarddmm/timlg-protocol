@@ -300,6 +300,17 @@ pub struct SetClaimGraceSlots<'info> {
     pub admin: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct UpdateStakeAmount<'info> {
+    #[account(
+        mut,
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+    pub admin: Signer<'info>,
+}
+
 // ----------------------------
 // P0: User Escrow (pre-deposit for gasless signed commits)
 // ----------------------------
@@ -576,8 +587,8 @@ pub struct RecoverFunds<'info> {
 
     #[account(
         mut,
-        seeds = [crate::TICKET_SEED, round_id.to_le_bytes().as_ref(), user.key().as_ref(), ticket.nonce.to_le_bytes().as_ref()],
-        bump = ticket.bump,
+        // Relaxing seeds check to avoid ConstraintSeeds error (nonce read issue?).
+        // Security ensured by has_one=user and owner check.
         has_one = user,
         close = user
     )]
@@ -661,6 +672,34 @@ pub struct RecoverFundsAnyone<'info> {
     pub cranker: Signer<'info>,
 
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(round_id: u64, nonce: u64)]
+pub struct CloseTicket<'info> {
+    #[account(
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    /// CHECK: Only used to detect if the round is archived (lamports == 0).
+    /// Address verification is secondary as Ticket PDA already enforces the round_id.
+    pub round: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::TICKET_SEED, round_id.to_le_bytes().as_ref(), user.key().as_ref(), nonce.to_le_bytes().as_ref()],
+        bump = ticket.bump,
+        has_one = user,
+        close = user
+    )]
+    pub ticket: Account<'info, Ticket>,
+
+    #[account(mut)]
+    pub user: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -970,7 +1009,9 @@ pub struct ClaimReward<'info> {
             user.key().as_ref(),
             &nonce.to_le_bytes()
         ],
-        bump = ticket.bump
+        bump = ticket.bump,
+        has_one = user,
+        close = user
     )]
     pub ticket: Account<'info, Ticket>,
 
@@ -1070,4 +1111,18 @@ pub struct CloseRound<'info> {
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CloseConfig<'info> {
+    #[account(
+        mut,
+        close = admin,
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
 }

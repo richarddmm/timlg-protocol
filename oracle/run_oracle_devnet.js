@@ -54,13 +54,13 @@ function expectedPulseMsg(programId, roundId, pulseIndexTarget, pulse64) {
 }
 
 function deriveConfigPda(programId) {
-  const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config")], programId);
+  const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config_v3")], programId);
   return configPda;
 }
 
 function deriveRoundPda(programId, roundId) {
   const [roundPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("round"), leU64(roundId)],
+    [Buffer.from("round_v3"), leU64(roundId)],
     programId
   );
   return roundPda;

@@ -8,6 +8,7 @@ use crate::{
     state::RoundState,
     utils::{assert_ed25519_ix_matches, expected_pulse_msg},
     SetOraclePubkey, SetPulseSigned,
+    constants::LATE_PULSE_SAFETY_BUFFER_SLOTS,
 };
 
 pub fn set_oracle_pubkey(ctx: Context<SetOraclePubkey>, oracle_pubkey: Pubkey) -> Result<()> {
@@ -37,8 +38,8 @@ pub fn set_pulse_signed(ctx: Context<SetPulseSigned>, round_id: u64, pulse: [u8;
     // Liveness Hazard Check:
     // If we are too close to (or past) the reveal deadline, we must reject the pulse.
     // This allows the round to remain in "PulseNotSet" state so users can Refund.
-    // Buffer: 50 slots (~20s) to give users at least some time to reveal.
-    let min_reveal_window = 50;
+    // Buffer to give users at least some time to reveal.
+    let min_reveal_window = LATE_PULSE_SAFETY_BUFFER_SLOTS;
     
     // Debug info for diagnosing late pulses
     if current_slot >= round.reveal_deadline_slot.saturating_sub(min_reveal_window) {

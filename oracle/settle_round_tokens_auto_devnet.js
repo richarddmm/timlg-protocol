@@ -66,7 +66,7 @@ function derivePda(programId, seedStr) {
 }
 function deriveTokenomicsPda(programId, configPda) {
   // On-chain seeds: [TOKENOMICS_SEED, config.key().as_ref()]
-  return derivePdaSeeds(programId, [Buffer.from("tokenomics"), configPda.toBuffer()]);
+  return derivePdaSeeds(programId, [Buffer.from("tokenomics_v3"), configPda.toBuffer()]);
 }
 function u64LE(n) {
   const bn = BigInt(n);
@@ -76,7 +76,7 @@ function u64LE(n) {
 }
 function deriveRoundPda(programId, roundId) {
   return PublicKey.findProgramAddressSync(
-    [Buffer.from("round"), u64LE(roundId)],
+    [Buffer.from("round_v3"), u64LE(roundId)],
     programId
   )[0];
 }
@@ -237,7 +237,7 @@ async function settleRound(connection, programId, admin, roundId) {
   const coder = new anchor.BorshCoder(idl);
 
   // PDAs
-  const configPda = derivePda(programId, "config");
+  const configPda = derivePda(programId, "config_v3");
   // Optimization: We could pass configPda / tokenomicsPda if we knew them to avoid 1 RPC call
   const cfgInfo = await mustGetAccountInfo(connection, configPda, "Config PDA");
   const cfgName = findAccountNameInIdl(idl, "config") || "Config";

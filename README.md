@@ -2,8 +2,8 @@
 
 TIMLG is a **public, auditable experiment protocol** built on the Solana blockchain. It implements a slot-bounded **commit–reveal** mechanism against a publicly verifiable 512-bit randomness pulse.
 
-[![Verifiable Build](https://img.shields.io/badge/Solana-Verifiable_Build-2e7d32?logo=solana)](https://explorer.solana.com/address/DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR/verified-build?cluster=devnet)
-[![Security Policy](https://img.shields.io/badge/Security-Included-1565c0)](https://explorer.solana.com/address/DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR/security?cluster=devnet)
+[![Verifiable Build](https://img.shields.io/badge/Solana-Verifiable_Build-2e7d32?logo=solana)](https://explorer.solana.com/address/GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP/verified-build?cluster=devnet)
+[![Security Policy](https://img.shields.io/badge/Security-Included-1565c0)](https://explorer.solana.com/address/GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP/security?cluster=devnet)
 [![Devnet Active](https://img.shields.io/badge/Status-Devnet_Active-informational)](https://timlg.org)
 
 ## Overview
@@ -29,7 +29,7 @@ This repository includes a professional **Oracle Showcase** (located in the [/or
 - **Official Website**: [https://timlg.org](https://timlg.org)
 - **Documentation Hub**: [https://timlg.org/protocol/overview/](https://timlg.org/protocol/overview/)
 - **Beta App**: [https://timlg.org/beta/](https://timlg.org/beta/)
-- **On-chain Program**: [`DrsJx...JqR`](https://explorer.solana.com/address/DrsJxZRNuEFHVyj3Sz5CzpVeacpAGHBoZrg9NtRH9JqR?cluster=devnet)
+- **On-chain Program**: [`GeA3...PrUP`](https://explorer.solana.com/address/GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP?cluster=devnet)
 
 ## Security
 
