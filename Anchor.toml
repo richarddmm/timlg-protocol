@@ -15,7 +15,7 @@ timlg_protocol = "GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "https://devnet.helius-rpc.com/?api-key=bd37fed6-13d1-4959-9a54-7f736355b5f6"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

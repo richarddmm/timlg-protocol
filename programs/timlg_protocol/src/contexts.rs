@@ -311,6 +311,24 @@ pub struct UpdateStakeAmount<'info> {
     pub admin: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct UpdateTokenomics<'info> {
+    #[account(
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    #[account(
+        mut,
+        seeds = [crate::TOKENOMICS_SEED, config.key().as_ref()],
+        bump
+    )]
+    pub tokenomics: Account<'info, Tokenomics>,
+
+    pub admin: Signer<'info>,
+}
+
 // ----------------------------
 // P0: User Escrow (pre-deposit for gasless signed commits)
 // ----------------------------

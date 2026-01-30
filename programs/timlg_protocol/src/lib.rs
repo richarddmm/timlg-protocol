@@ -249,4 +249,11 @@ pub mod timlg_protocol {
         admin::initialize_tokenomics(ctx, reward_fee_bps)
     }
 
+    pub fn update_tokenomics(
+        ctx: Context<UpdateTokenomics>,
+        reward_fee_bps: u16,
+    ) -> Result<()> {
+        admin::update_tokenomics(ctx, reward_fee_bps)
+    }
+
 }

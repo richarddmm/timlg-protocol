@@ -10,6 +10,7 @@ use crate::{
     CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
 };
 use crate::InitializeTokenomics;
+use crate::UpdateTokenomics;
 use crate::VAULT_SEED;
 use crate::constants::*;
 
@@ -38,6 +39,21 @@ pub fn initialize_tokenomics(
     tok.replication_pool_bump = ctx.bumps.replication_pool;
 
     tok.version = INITIAL_VERSION;
+
+    Ok(())
+}
+
+pub fn update_tokenomics(
+    ctx: Context<UpdateTokenomics>,
+    reward_fee_bps: u16,
+) -> Result<()> {
+    require!(reward_fee_bps <= 10_000, TimlgError::InvalidFeeBps);
+
+    let cfg = &ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+
+    let tok = &mut ctx.accounts.tokenomics;
+    tok.reward_fee_bps = reward_fee_bps;
 
     Ok(())
 }
