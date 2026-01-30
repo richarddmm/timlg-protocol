@@ -337,6 +337,9 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         round.committed_count -= 1;
     }
 
+    // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
+    ticket.processed = true;
+
     Ok(())
 }
 
@@ -358,12 +361,21 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
     let round_alive = ctx.accounts.round.lamports() > 0;
 
     if round_alive {
-        // If round is alive, we enforce processing to ensure no double-claiming or skipping settlement.
-        if ticket.processed {
-            if ticket.win {
+        // Condition A: Ticket processed (Settled or Refunded w/ new fix)
+        let is_processed = ticket.processed;
+        
+        // Condition B: Refund Mode Active (Timeout + No Pulse) - Allows closing legacy refunded tickets
+        let current_slot = Clock::get()?.slot;
+        let timeout_slots = REFUND_TIMEOUT_SLOTS; 
+        let is_refund_mode = !ctx.accounts.round.pulse_set && 
+                             current_slot > ctx.accounts.round.reveal_deadline_slot.saturating_add(timeout_slots);
+
+        if is_processed || is_refund_mode {
+            if ticket.win && !ticket.claimed && !is_refund_mode { 
+                // Winners must claim first (unless in refund mode where win is impossible)
                 require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
             }
-            // If !win, allowed.
+            // OK to close
         } else {
             return Err(error!(TimlgError::TicketNotProcessed));
         }
@@ -390,7 +402,7 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
         TimlgError::RefundTooEarly
     );
 
-    let ticket = &ctx.accounts.ticket;
+    let ticket = &mut ctx.accounts.ticket; // Mutable for processed flag
     require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);
 
     // Refund: Transfer Stake from Vault -> User
@@ -416,6 +428,9 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
     if round.committed_count > 0 {
         round.committed_count -= 1;
     }
+
+    // ✅ Fix: Mark as processed
+    ticket.processed = true;
 
     Ok(())
 }
