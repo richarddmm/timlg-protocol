@@ -307,7 +307,7 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
     // SECURITY: Cannot refund if pulse is already set (outcome determined), even if not finalized yet.
     require!(!round.pulse_set, TimlgError::PulseAlreadySet);
 
-    let ticket = &ctx.accounts.ticket;
+    let ticket = &mut ctx.accounts.ticket;
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
     require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);
     
@@ -365,10 +365,24 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         let is_processed = ticket.processed;
         
         // Condition B: Refund Mode Active (Timeout + No Pulse) - Allows closing legacy refunded tickets
-        let current_slot = Clock::get()?.slot;
-        let timeout_slots = REFUND_TIMEOUT_SLOTS; 
-        let is_refund_mode = !ctx.accounts.round.pulse_set && 
-                             current_slot > ctx.accounts.round.reveal_deadline_slot.saturating_add(timeout_slots);
+        // Need to deserialize round state from UncheckedAccount to check flags
+        let mut is_refund_mode = false;
+        
+        if !ctx.accounts.round.data_is_empty() {
+             // Attempt to verify refund mode conditions
+             // Only try if data looks correct size for Round (approx 8 + 200+ bytes)
+             // We can proceed even if deserialize fails (safe default false)
+             let round_data = ctx.accounts.round.try_borrow_data()?;
+             let mut slice: &[u8] = &round_data;
+             if let Ok(round_state) = Round::try_deserialize(&mut slice) {
+                 if round_state.round_id == round_id {
+                     let current_slot = Clock::get()?.slot;
+                     let timeout_slots = REFUND_TIMEOUT_SLOTS;
+                     is_refund_mode = !round_state.pulse_set && 
+                                      current_slot > round_state.reveal_deadline_slot.saturating_add(timeout_slots);
+                 }
+             }
+        }
 
         if is_processed || is_refund_mode {
             if ticket.win && !ticket.claimed && !is_refund_mode { 
