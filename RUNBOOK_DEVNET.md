@@ -18,11 +18,22 @@ This document provides a technical walkthrough for developers and grant reviewer
 The oracle and automation scripts rely on a `.env` file in the root of the operator repository.
 
 ```bash
-# Example .env configuration
-RPC_URL="https://api.devnet.solana.com"
+# RPC Configuration (HA Strategy)
+RPC_URL="https://devnet.helius-rpc.com/?api-key=YOUR_API_KEY"
+SECONDARY_RPC_URL="https://api.devnet.solana.com"
+# Strategy: "PRIMARY", "SECONDARY", or "RACE" (High Availability)
+RPC_MODE="RACE" 
+
+# Protocol Identities
 PROGRAM_ID="GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP"
+TIMLG_MINT="7kpdb6snovzpm5T5rU6BKJspX7qMUwaSVv9Ki5zqSHjy"
+
+# Authority Keypairs
 ADMIN_KEYPAIR="~/.config/solana/id.json"
 ORACLE_KEYPAIR="~/.config/timlg/oracle/id.json"
+RELAYER_KEYPAIR="~/.config/solana/id.json"
+
+# Timing Parameters (Devnet Standards)
 COMMIT_DURATION_SEC=420
 REVEAL_WINDOW_SLOTS=1000
 ```
