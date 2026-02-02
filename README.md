@@ -29,7 +29,6 @@ This repository includes a professional **Oracle Showcase** (located in the [/or
 - **Official Website**: [https://timlg.org](https://timlg.org)
 - **Documentation Hub**: [https://timlg.org/protocol/overview/](https://timlg.org/protocol/overview/)
 - **Beta App**: [https://timlg.org/beta/](https://timlg.org/beta/)
-- **Technical Runbook**: [RUNBOOK_DEVNET.md](./RUNBOOK_DEVNET.md) (E2E Devnet Walkthrough)
 - **On-chain Program**: [`GeA3...PrUP`](https://explorer.solana.com/address/GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP?cluster=devnet)
 
 ## Security
