@@ -9,7 +9,7 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     let ticket = &mut ctx.accounts.ticket;
     let tokenomics = &ctx.accounts.tokenomics;
 
-    require!(round.token_settled, TimlgError::RoundNotSettled);
+    require!(round.finalized, TimlgError::NotFinalized);
 
     // si ya se hizo sweep, se cerró la ventana de claim
     require!(!round.swept, TimlgError::ClaimAfterSweep);

@@ -367,11 +367,9 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         // Condition B: Refund Mode Active (Timeout + No Pulse) - Allows closing legacy refunded tickets
         // Need to deserialize round state from UncheckedAccount to check flags
         let mut is_refund_mode = false;
+        let mut is_finalized_status = false;
         
         if !ctx.accounts.round.data_is_empty() {
-             // Attempt to verify refund mode conditions
-             // Only try if data looks correct size for Round (approx 8 + 200+ bytes)
-             // We can proceed even if deserialize fails (safe default false)
              let round_data = ctx.accounts.round.try_borrow_data()?;
              let mut slice: &[u8] = &round_data;
              if let Ok(round_state) = Round::try_deserialize(&mut slice) {
@@ -380,11 +378,12 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
                      let timeout_slots = REFUND_TIMEOUT_SLOTS;
                      is_refund_mode = !round_state.pulse_set && 
                                       current_slot > round_state.reveal_deadline_slot.saturating_add(timeout_slots);
+                     is_finalized_status = round_state.finalized;
                  }
              }
         }
 
-        if is_processed || is_refund_mode {
+        if is_processed || is_refund_mode || is_finalized_status {
             if ticket.win && !ticket.claimed && !is_refund_mode { 
                 // Winners must claim first (unless in refund mode where win is impossible)
                 require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);

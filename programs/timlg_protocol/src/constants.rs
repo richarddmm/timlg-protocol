@@ -19,10 +19,10 @@ pub const REFUND_TIMEOUT_SLOTS: u64 = 150;
 // Centralized Protocol Defaults (Devnet)
 // =====================================
 
-/// Default window for the Commit phase (slots).
+/// Default window for the Commit phase (slots). Dev default; check current config.
 pub const DEFAULT_COMMIT_WINDOW_SLOTS: u64 = 1000;
 
-/// Default window for the Reveal phase (slots).
+/// Default window for the Reveal phase (slots). Dev default; check current config.
 pub const DEFAULT_REVEAL_WINDOW_SLOTS: u64 = 1000;
 
 /// Default grace period for claims before sweeping (slots).
@@ -31,8 +31,8 @@ pub const DEFAULT_CLAIM_GRACE_SLOTS: u64 = 900;
 /// Buffer to ensure users have time to reveal after pulse is set.
 pub const LATE_PULSE_SAFETY_BUFFER_SLOTS: u64 = 50;
 
-/// Default stake amount (assuming 0 decimals for TIMLG).
-pub const DEFAULT_STAKE_AMOUNT: u64 = 1;
+/// Default stake amount in base units (1.0 TIMLG = 1_000_000_000, assuming 9 decimals).
+pub const DEFAULT_STAKE_AMOUNT: u64 = 1_000_000_000;
 
 /// Default fee on minted rewards (basis points). 100 = 1%.
 pub const DEFAULT_REWARD_FEE_BPS: u16 = 100;

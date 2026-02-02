@@ -25,11 +25,14 @@ security_txt! {
 
     // Optional fields
     preferred_languages: "en,es",
-    source_code: "https://github.com/richarddmm/timlg-protocol"
+    source_code: "https://github.com/richarddmm/timlg-protocol",
+    expiry: "2026-12-31"
 }
 
 
 
+// Current Devnet Program ID. 
+// Note: Mainnet deployment will require a different ID.
 declare_id!("GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP");
 
 #[program]

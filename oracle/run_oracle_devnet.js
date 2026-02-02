@@ -205,6 +205,7 @@ async function main() {
     .instruction();
 
   const tx = new Transaction().add(edIx, setPulseIx);
+  // Relayer keypair pays fees in current Devnet tooling (script-driven). Not a standalone relayer service yet.
   tx.feePayer = relayer.publicKey;
 
   const { blockhash } = await connection.getLatestBlockhash("confirmed");
