@@ -41,6 +41,7 @@ const {
   SYSVAR_CLOCK_PUBKEY,
   SYSVAR_INSTRUCTIONS_PUBKEY,
 } = anchor.web3;
+const { setupDualConnection, withRpcStrategy } = require("./operator/lib_operator");
 
 function die(msg) {
   console.error("ERROR:", msg);
@@ -186,7 +187,11 @@ async function main() {
 
   const programId = new PublicKey(PROGRAM_ID);
   const admin = loadKeypair(ADMIN_KEYPAIR);
-  const connection = new Connection(RPC_URL, "confirmed");
+
+  // ✅ Dual RPC
+  const rpcCtx = setupDualConnection();
+  const { primary: connection } = rpcCtx; // For base reference, but we use strategy for calls
+
   const idl = loadIdl();
 
   const ix = findIx(idl, "create_round_auto");
@@ -196,7 +201,7 @@ async function main() {
   const [configPda] = PublicKey.findProgramAddressSync([Buffer.from("config_v3")], programId);
 
   // ---- Decode Config to resolve timlg_mint (avoid stale hardcoded mint) ----
-  const cfgInfo = await connection.getAccountInfo(configPda, "confirmed");
+  const cfgInfo = await withRpcStrategy(c => c.getAccountInfo(configPda, "confirmed"), rpcCtx);
   if (!cfgInfo) die(`Config missing on-chain at ${configPda.toBase58()} (run init_config_devnet.js first)`);
 
   const accountsCoderCfg = new anchor.BorshAccountsCoder(idl);
@@ -234,7 +239,7 @@ async function main() {
     programId
   );
 
-  const rrInfo = await connection.getAccountInfo(roundRegistryPda, "confirmed");
+  const rrInfo = await withRpcStrategy(c => c.getAccountInfo(roundRegistryPda, "confirmed"), rpcCtx);
   if (!rrInfo) {
     die(`RoundRegistry missing on-chain at ${roundRegistryPda.toBase58()} (run init_round_registry first)`);
   }
@@ -289,7 +294,7 @@ async function main() {
 
   // ---- Build args dynamically from IDL arg names ----
   const args = {};
-  const currentSlotBefore = await connection.getSlot("confirmed");
+  const currentSlotBefore = await withRpcStrategy(c => c.getSlot("confirmed"), rpcCtx);
   const commitDeadline = currentSlotBefore + COMMIT_WINDOW_SLOTS;
   const revealDeadline = commitDeadline + REVEAL_WINDOW_SLOTS;
 
@@ -423,7 +428,7 @@ async function main() {
 
   let sig;
   try {
-    sig = await sendAndConfirmTransaction(connection, tx, [admin], { commitment: "confirmed" });
+    sig = await withRpcStrategy(c => sendAndConfirmTransaction(c, tx, [admin], { commitment: "confirmed" }), rpcCtx);
   } catch (e) {
     // Print logs when possible (SendTransactionError)
     const logs = e?.logs || e?.transactionLogs || e?.transactionMessage || null;
@@ -435,7 +440,7 @@ async function main() {
   }
 
   // Optional decode round
-  const roundInfo = await connection.getAccountInfo(roundPda, "confirmed");
+  const roundInfo = await withRpcStrategy(c => c.getAccountInfo(roundPda, "confirmed"), rpcCtx);
   let decodedRound = null;
   if (roundInfo) {
     const roundAccName = pickAccountName(

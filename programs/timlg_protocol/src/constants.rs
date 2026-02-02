@@ -35,7 +35,7 @@ pub const LATE_PULSE_SAFETY_BUFFER_SLOTS: u64 = 50;
 pub const DEFAULT_STAKE_AMOUNT: u64 = 1;
 
 /// Default fee on minted rewards (basis points). 100 = 1%.
-pub const DEFAULT_REWARD_FEE_BPS: u16 = 0;
+pub const DEFAULT_REWARD_FEE_BPS: u16 = 100;
 
 /// Initial version for account structures.
 pub const INITIAL_VERSION: u16 = 1;
