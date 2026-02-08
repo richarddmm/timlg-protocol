@@ -367,9 +367,30 @@ pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> 
         TimlgError::InsufficientVaultFunds
     );
 
-    // ✅ Transfer lamports
-    **treasury_info.try_borrow_mut_lamports()? -= withdraw_amount;
-    **admin_info.try_borrow_mut_lamports()? += withdraw_amount;
+    // Generate signer seeds for PDA
+    let Bump = ctx.accounts.config.treasury_sol_bump;
+    let seeds = &[
+        crate::TREASURY_SOL_SEED,
+        &[Bump],
+    ];
+    let signer = &[&seeds[..]];
+
+    // Use System Transfer Signed by PDA
+    let ix = anchor_lang::solana_program::system_instruction::transfer(
+        &ctx.accounts.treasury_sol.key(),
+        &ctx.accounts.admin.key(),
+        withdraw_amount,
+    );
+
+    anchor_lang::solana_program::program::invoke_signed(
+        &ix,
+        &[
+            ctx.accounts.treasury_sol.to_account_info(),
+            ctx.accounts.admin.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        signer,
+    )?;
 
     Ok(())
 }
