@@ -8,7 +8,7 @@ use crate::errors::TimlgError;
 use crate::state::{Config, RoundState};
 use crate::{
     CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
-    UpdateSolServiceFee, WithdrawTreasurySol, WithdrawTreasuryTokens, CloseConfig,
+    UpdateSolServiceFee, WithdrawTreasurySol, WithdrawTreasuryTokens, CloseConfig, MigrateConfig,
 };
 use crate::InitializeTokenomics;
 use crate::UpdateTokenomics;
@@ -406,6 +406,51 @@ pub fn withdraw_treasury_tokens(ctx: Context<WithdrawTreasuryTokens>, amount: u6
         ),
         transfer_amount,
     )?;
+
+    Ok(())
+}
+
+pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
+    let config_info = ctx.accounts.config.to_account_info();
+    
+    // 1. Minimum authorization check (since we can't deserialize the whole struct yet)
+    let data = config_info.try_borrow_data()?;
+    if data.len() < 40 {
+        return Err(ProgramError::InvalidAccountData.into());
+    }
+    // Admin is at offset 8 (after discriminator)
+    let admin_on_chain = Pubkey::new_from_array(data[8..40].try_into().unwrap());
+    if admin_on_chain != ctx.accounts.admin.key() {
+        return Err(TimlgError::Unauthorized.into());
+    }
+    drop(data);
+
+    // 2. Calculate new size and rent
+    let new_size = Config::INIT_SPACE + 8; // Anchor space + discriminator
+    let rent = Rent::get()?;
+    let new_minimum_balance = rent.minimum_balance(new_size);
+    let lamports_diff = new_minimum_balance.saturating_sub(config_info.lamports());
+
+    // 3. Fund account if needed
+    if lamports_diff > 0 {
+        anchor_lang::solana_program::program::invoke(
+            &anchor_lang::solana_program::system_instruction::transfer(
+                &ctx.accounts.admin.key(),
+                &config_info.key(),
+                lamports_diff,
+            ),
+            &[
+                ctx.accounts.admin.to_account_info(),
+                config_info.clone(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+    }
+
+    // 4. Realloc
+    config_info.realloc(new_size, false)?;
+    
+    msg!("Config migrated to size: {}", new_size);
 
     Ok(())
 }

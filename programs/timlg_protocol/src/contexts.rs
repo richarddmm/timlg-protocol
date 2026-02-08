@@ -1230,3 +1230,19 @@ pub struct WithdrawTreasuryTokens<'info> {
 
     pub token_program: Program<'info, Token>,
 }
+
+#[derive(Accounts)]
+pub struct MigrateConfig<'info> {
+    #[account(
+        mut,
+        seeds = [crate::CONFIG_SEED],
+        bump
+    )]
+    /// CHECK: Manual migration of size.
+    pub config: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}

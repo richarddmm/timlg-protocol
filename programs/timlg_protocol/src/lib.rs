@@ -216,6 +216,10 @@ pub mod timlg_protocol {
         admin::update_sol_service_fee(ctx, new_fee)
     }
 
+    pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
+        admin::migrate_config(ctx)
+    }
+
     pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> Result<()> {
         admin::withdraw_treasury_sol(ctx, amount)
     }
