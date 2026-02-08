@@ -44,6 +44,23 @@ pub fn commit_ticket(
         cfg.stake_amount,
     )?;
 
+    // --- TRANSFER SOL service fee to treasury_sol ---
+    if cfg.sol_service_fee_lamports > 0 {
+        let ix = system_instruction::transfer(
+            &ctx.accounts.user.key(),
+            &ctx.accounts.treasury_sol.key(),
+            cfg.sol_service_fee_lamports,
+        );
+        anchor_lang::solana_program::program::invoke(
+            &ix,
+            &[
+                ctx.accounts.user.to_account_info(),
+                ctx.accounts.treasury_sol.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+    }
+
     // --- ticket ---
     let user_pk = ctx.accounts.user.key();
     let ticket = &mut ctx.accounts.ticket;
@@ -115,6 +132,27 @@ pub fn commit_batch<'info>(
         ),
         total,
     )?;
+
+    // --- TRANSFER SOL service fee (batch) ---
+    if cfg.sol_service_fee_lamports > 0 {
+        let total_sol_fee = cfg.sol_service_fee_lamports
+            .checked_mul(n)
+            .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+            
+        let ix = system_instruction::transfer(
+            &ctx.accounts.user.key(),
+            &ctx.accounts.treasury_sol.key(),
+            total_sol_fee,
+        );
+        anchor_lang::solana_program::program::invoke(
+            &ix,
+            &[
+                ctx.accounts.user.to_account_info(),
+                ctx.accounts.treasury_sol.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+    }
 
     // --- crear tickets (PDA accounts) ---
     let user_pk = ctx.accounts.user.key();
@@ -288,6 +326,27 @@ pub fn commit_batch_signed<'info>(
         ]]),
         total,
     )?;
+
+    // --- TRANSFER SOL service fee from payer -> treasury_sol (batch signed) ---
+    if cfg.sol_service_fee_lamports > 0 {
+        let total_sol_fee = cfg.sol_service_fee_lamports
+            .checked_mul(n)
+            .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+        let ix = system_instruction::transfer(
+            &ctx.accounts.payer.key(),
+            &ctx.accounts.treasury_sol.key(),
+            total_sol_fee,
+        );
+        anchor_lang::solana_program::program::invoke(
+            &ix,
+            &[
+                ctx.accounts.payer.to_account_info(),
+                ctx.accounts.treasury_sol.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+        )?;
+    }
 
     // --- create ticket PDA accounts (payer = relayer/payer) ---
     let payer_pk = ctx.accounts.payer.key();

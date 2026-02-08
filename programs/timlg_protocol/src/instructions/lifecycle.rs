@@ -59,7 +59,7 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     if vault_lamports > 0 {
         let ix = system_instruction::transfer(
             &ctx.accounts.vault.key(),
-            &ctx.accounts.treasury_sol.key(),
+            &ctx.accounts.admin.key(),
             vault_lamports,
         );
 
@@ -70,7 +70,7 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
             &ix,
             &[
                 ctx.accounts.vault.to_account_info(),
-                ctx.accounts.treasury_sol.to_account_info(),
+                ctx.accounts.admin.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
             &[signer_seeds],

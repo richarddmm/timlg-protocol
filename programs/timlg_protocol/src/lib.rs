@@ -212,6 +212,18 @@ pub mod timlg_protocol {
         admin::update_stake_amount(ctx, new_stake_amount)
     }
 
+    pub fn update_sol_service_fee(ctx: Context<UpdateSolServiceFee>, new_fee: u64) -> Result<()> {
+        admin::update_sol_service_fee(ctx, new_fee)
+    }
+
+    pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> Result<()> {
+        admin::withdraw_treasury_sol(ctx, amount)
+    }
+
+    pub fn withdraw_treasury_tokens(ctx: Context<WithdrawTreasuryTokens>, amount: u64) -> Result<()> {
+        admin::withdraw_treasury_tokens(ctx, amount)
+    }
+
     pub fn init_user_escrow(ctx: Context<InitUserEscrow>) -> Result<()> {
         escrow::init_user_escrow(ctx)
     }

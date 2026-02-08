@@ -778,6 +778,7 @@ pub struct SweepUnclaimed<'info> {
     #[account(address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,
 
+    #[account(mut)]
     pub admin: Signer<'info>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -829,6 +830,14 @@ pub struct CommitTicket<'info> {
         constraint = user_timlg_ata.owner == user.key()
     )]
     pub user_timlg_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        seeds = [crate::TREASURY_SOL_SEED],
+        bump = config.treasury_sol_bump,
+        address = config.treasury_sol
+    )]
+    pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -897,6 +906,14 @@ pub struct CommitBatch<'info> {
         constraint = user_timlg_ata.owner == user.key()
     )]
     pub user_timlg_ata: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        seeds = [crate::TREASURY_SOL_SEED],
+        bump = config.treasury_sol_bump,
+        address = config.treasury_sol
+    )]
+    pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -967,6 +984,14 @@ pub struct CommitBatchSigned<'info> {
 
     /// CHECK: instructions sysvar for ed25519 introspection
     pub instructions: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::TREASURY_SOL_SEED],
+        bump = config.treasury_sol_bump,
+        address = config.treasury_sol
+    )]
+    pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -1143,4 +1168,65 @@ pub struct CloseConfig<'info> {
 
     #[account(mut)]
     pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateSolServiceFee<'info> {
+    #[account(
+        mut,
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawTreasurySol<'info> {
+    #[account(
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    /// CHECK: System-owned PDA. Address enforced.
+    #[account(
+        mut,
+        seeds = [crate::TREASURY_SOL_SEED],
+        bump = config.treasury_sol_bump,
+        address = config.treasury_sol
+    )]
+    pub treasury_sol: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawTreasuryTokens<'info> {
+    #[account(
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+
+    #[account(
+        mut,
+        constraint = source_vault.owner == config.key()
+    )]
+    pub source_vault: Account<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        constraint = admin_ata.mint == source_vault.mint,
+        constraint = admin_ata.owner == admin.key()
+    )]
+    pub admin_ata: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    pub token_program: Program<'info, Token>,
 }

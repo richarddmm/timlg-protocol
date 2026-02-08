@@ -8,6 +8,7 @@ use crate::errors::TimlgError;
 use crate::state::{Config, RoundState};
 use crate::{
     CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
+    UpdateSolServiceFee, WithdrawTreasurySol, WithdrawTreasuryTokens, CloseConfig,
 };
 use crate::InitializeTokenomics;
 use crate::UpdateTokenomics;
@@ -164,6 +165,9 @@ pub fn initialize_config(
     cfg.claim_grace_slots = DEFAULT_CLAIM_GRACE_SLOTS;
     cfg.oracle_pubkey = Pubkey::default(); // <- NO Option
     cfg.paused = false;
+    // ✅ NUEVO: Tasa de servicio inicial a 0
+    cfg.sol_service_fee_lamports = 0;
+
     cfg.version = INITIAL_VERSION;
 
     // SPL token plumbing
@@ -318,8 +322,6 @@ pub fn set_claim_grace_slots(ctx: Context<SetClaimGraceSlots>, claim_grace_slots
     Ok(())
 }
 
-use crate::CloseConfig;
-
 pub fn close_config(_ctx: Context<CloseConfig>) -> Result<()> {
     // The account closing is handled by the `close = admin` constraint in the context.
     Ok(())
@@ -335,4 +337,77 @@ pub fn update_stake_amount(ctx: Context<UpdateStakeAmount>, new_stake_amount: u6
     
     Ok(())
 }
+
+pub fn update_sol_service_fee(ctx: Context<UpdateSolServiceFee>, new_fee: u64) -> Result<()> {
+    let cfg = &mut ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+    cfg.sol_service_fee_lamports = new_fee;
+    Ok(())
+}
+
+pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> Result<()> {
+    let cfg = &ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+
+    let treasury_info = ctx.accounts.treasury_sol.to_account_info();
+    let admin_info = ctx.accounts.admin.to_account_info();
+
+    let rent = Rent::get()?;
+    let min_rent = rent.minimum_balance(0); // system account
+    let current_lamports = treasury_info.lamports();
+
+    let withdraw_amount = if amount == 0 {
+        current_lamports.saturating_sub(min_rent)
+    } else {
+        amount
+    };
+
+    require!(
+        current_lamports >= withdraw_amount.saturating_add(min_rent),
+        TimlgError::InsufficientVaultFunds
+    );
+
+    // ✅ Transfer lamports
+    **treasury_info.try_borrow_mut_lamports()? -= withdraw_amount;
+    **admin_info.try_borrow_mut_lamports()? += withdraw_amount;
+
+    Ok(())
+}
+
+pub fn withdraw_treasury_tokens(ctx: Context<WithdrawTreasuryTokens>, amount: u64) -> Result<()> {
+    let cfg = &ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+
+    let transfer_amount = if amount == 0 {
+        ctx.accounts.source_vault.amount
+    } else {
+        amount
+    };
+
+    if transfer_amount == 0 {
+        return Ok(());
+    }
+
+    let seeds = &[
+        crate::CONFIG_SEED,
+        &[cfg.bump],
+    ];
+    let signer = &[&seeds[..]];
+
+    token::transfer(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            token::Transfer {
+                from: ctx.accounts.source_vault.to_account_info(),
+                to: ctx.accounts.admin_ata.to_account_info(),
+                authority: cfg.to_account_info(),
+            },
+            signer,
+        ),
+        transfer_amount,
+    )?;
+
+    Ok(())
+}
+
 

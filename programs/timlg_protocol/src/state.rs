@@ -38,6 +38,9 @@ pub struct Config {
     // ✅ NUEVO: Treasury SOL (lamports) separado
     pub treasury_sol: Pubkey,
     pub treasury_sol_bump: u8,
+
+    // ✅ NUEVO: Tasa de servicio en SOL por ticket (lamports)
+    pub sol_service_fee_lamports: u64,
 }
 
 #[account]
