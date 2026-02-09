@@ -242,8 +242,10 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     // Safety checks: ensure round is completely done
     require!(round.finalized, TimlgError::NotFinalized);
     // If no tickets were committed, token_settled might be false, which is fine.
+    // If vault is already empty, we can allow closure even if counters are desynced (escape hatch)
+    let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
     require!(
-        round.token_settled || round.committed_count == 0,
+        round.token_settled || round.committed_count == 0 || vault_is_empty,
         TimlgError::RoundTokensNotSettled
     );
     require!(round.swept, TimlgError::NotSwept);
@@ -385,8 +387,23 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
 
         if is_processed || is_refund_mode || is_finalized_status {
             if ticket.win && !ticket.claimed && !is_refund_mode { 
-                // Winners must claim first (unless in refund mode where win is impossible)
-                require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                // Winners must claim first (unless in refund mode or round is swept)
+                if !is_finalized_status {
+                    // If round is NOT finalized, it might still reach a refund mode
+                    require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                } else {
+                    // Round IS finalized. Check if swept.
+                    let round_data = ctx.accounts.round.try_borrow_data()?;
+                    let mut slice: &[u8] = &round_data;
+                    if let Ok(round_state) = Round::try_deserialize(&mut slice) {
+                        if !round_state.swept {
+                             require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                        }
+                    } else {
+                        // Could not deserialize, safer to require claim
+                        require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                    }
+                }
             }
             // OK to close
         } else {
