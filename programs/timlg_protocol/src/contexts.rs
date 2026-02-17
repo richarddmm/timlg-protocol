@@ -854,6 +854,7 @@ pub struct RevealTicket<'info> {
     pub config: Account<'info, Config>,
 
     #[account(
+        mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
@@ -929,6 +930,7 @@ pub struct RevealBatch<'info> {
     pub config: Account<'info, Config>,
 
     #[account(
+        mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]

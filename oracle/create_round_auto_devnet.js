@@ -66,6 +66,7 @@ function loadKeypair(fp) {
 
 function loadIdl() {
   const candidates = [
+    path.resolve(process.cwd(), "oracle/timlg_protocol.json"),
     path.resolve(process.cwd(), "target/idl/timlg_protocol.json"),
     path.resolve(__dirname, "../target/idl/timlg_protocol.json"),
     path.resolve(process.cwd(), "idl/timlg_protocol.json"),
