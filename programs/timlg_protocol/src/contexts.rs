@@ -161,6 +161,7 @@ pub struct InitializeConfig<'info> {
         seeds = [crate::TREASURY_SOL_SEED],
         bump
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     /// Treasury SPL = TokenAccount PDA controlado por el programa (authority = config PDA)
@@ -753,6 +754,7 @@ pub struct SweepUnclaimed<'info> {
         bump = config.treasury_sol_bump,
         address = config.treasury_sol
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     /// ✅ SPL vault per round
@@ -837,6 +839,7 @@ pub struct CommitTicket<'info> {
         bump = config.treasury_sol_bump,
         address = config.treasury_sol
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
@@ -914,6 +917,7 @@ pub struct CommitBatch<'info> {
         bump = config.treasury_sol_bump,
         address = config.treasury_sol
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
@@ -993,6 +997,7 @@ pub struct CommitBatchSigned<'info> {
         bump = config.treasury_sol_bump,
         address = config.treasury_sol
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token>,
@@ -1198,6 +1203,7 @@ pub struct WithdrawTreasurySol<'info> {
         bump = config.treasury_sol_bump,
         address = config.treasury_sol
     )]
+    /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
     #[account(mut)]
