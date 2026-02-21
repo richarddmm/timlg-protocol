@@ -705,6 +705,7 @@ pub struct CloseTicket<'info> {
 
     /// CHECK: Only used to detect if the round is archived (lamports == 0).
     /// Address verification is secondary as Ticket PDA already enforces the round_id.
+    #[account(mut)]
     pub round: UncheckedAccount<'info>,
 
     #[account(

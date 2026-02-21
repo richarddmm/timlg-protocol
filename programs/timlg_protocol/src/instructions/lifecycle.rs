@@ -374,13 +374,31 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         if !ctx.accounts.round.data_is_empty() {
              let round_data = ctx.accounts.round.try_borrow_data()?;
              let mut slice: &[u8] = &round_data;
-             if let Ok(round_state) = Round::try_deserialize(&mut slice) {
+             if let Ok(mut round_state) = Round::try_deserialize(&mut slice) {
                  if round_state.round_id == round_id {
                      let current_slot = Clock::get()?.slot;
                      let timeout_slots = REFUND_TIMEOUT_SLOTS;
                      is_refund_mode = !round_state.pulse_set && 
                                       current_slot > round_state.reveal_deadline_slot.saturating_add(timeout_slots);
                      is_finalized_status = round_state.finalized;
+
+                     // ✅ FIXED: If ticket is NOT processed but we are closing it (because round is finalized),
+                     // we MUST decrement committed_count to prevent automated settlement from sticking.
+                         if round_state.committed_count > 0 {
+                             round_state.committed_count -= 1;
+                         }
+
+                         // ✅ NEW: If this makes the round "empty" or fully processed, mark as settled
+                         if round_state.committed_count == round_state.settled_count {
+                             round_state.token_settled = true;
+                             round_state.token_settled_slot = current_slot;
+                         }
+                         
+                         // Write back updated round state
+                         drop(round_data); // Drop borrow before borrow_mut
+                         let mut round_data_mut = ctx.accounts.round.try_borrow_mut_data()?;
+                         let mut w = std::io::Cursor::new(&mut round_data_mut[..]);
+                         round_state.try_serialize(&mut w)?;
                  }
              }
         }
