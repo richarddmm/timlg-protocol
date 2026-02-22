@@ -169,6 +169,13 @@ async function main() {
     return;
   }
 
+  const committedCount = (round.committedCount || round.committed_count || new BN(0)).toNumber();
+  if (committedCount === 0) {
+    console.log(`[oracle] Skipping pulse for Round #${roundId}: zero participation (committedCount=0).`);
+    // Graceful exit (code 0) so the loop continues to sweep phase
+    return;
+  }
+
   const pulseIndexTarget = Number(round.pulseIndexTarget.toString());
   const commitDeadlineSlot = Number(round.commitDeadlineSlot.toString());
 

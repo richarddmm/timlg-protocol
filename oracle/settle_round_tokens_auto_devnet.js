@@ -334,6 +334,22 @@ async function settleRound(connection, programId, admin, roundId) {
     console.log(`[settle] ✅ Round ${roundId} tx: ${tx}`);
     return true;
   } catch (e) {
+    // ⚠️ Anchor sometimes throws "Unknown action 'undefined'" when parsing
+    // the tx response/event logs even if the instruction succeeded on-chain.
+    // Verify the round's token_settled flag before propagating the error.
+    if (e.message && e.message.includes("Unknown action")) {
+      try {
+        const recheckInfo = await connection.getAccountInfo(roundPda, "confirmed");
+        if (recheckInfo) {
+          const roundRechecked = coder.accounts.decode(roundName, recheckInfo.data);
+          const isSettled = roundRechecked.tokenSettled ?? roundRechecked.token_settled ?? false;
+          if (isSettled) {
+            console.log(`[settle] ✅ Round ${roundId} confirmed settled on-chain (client-side parse error was a false positive).`);
+            return true;
+          }
+        }
+      } catch (_) { /* ignore recheck error, fall through to original throw */ }
+    }
     console.error(`[settle] ❌ Round ${roundId} failed: ${e.message}`);
     throw e;
   }

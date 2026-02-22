@@ -44,7 +44,10 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
 
     let round = &mut ctx.accounts.round;
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
-    require!(round.finalized, TimlgError::NotFinalized);
+    // Allow sweep of unfinalized rounds ONLY if they never received tickets (skipped pulse phase)
+    if round.committed_count > 0 {
+        require!(round.finalized, TimlgError::NotFinalized);
+    }
     require!(!round.swept, TimlgError::AlreadySwept);
 
     // ✅ grace period gate
@@ -240,7 +243,9 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     
     // Safety checks: ensure round is completely done
-    require!(round.finalized, TimlgError::NotFinalized);
+    if round.committed_count > 0 {
+        require!(round.finalized, TimlgError::NotFinalized);
+    }
     // If no tickets were committed, token_settled might be false, which is fine.
     // If vault is already empty, we can allow closure even if counters are desynced (escape hatch)
     let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
