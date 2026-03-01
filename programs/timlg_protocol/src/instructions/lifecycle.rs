@@ -59,27 +59,32 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     );
     require_keys_eq!(expected_vault, vault_ai.key(), TimlgError::TicketPdaMismatch);
 
-    let mut data = round_ai
-        .try_borrow_mut_data()
-        .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
-    
-    // Flexible decoding: handle legacy 231-byte vs modern 248+ byte
-    let mut round = if data.len() == 231 {
-        let mut padded = [0u8; 248];
-        padded[..231].copy_from_slice(&data);
-        let mut slice: &[u8] = &padded;
-        Round::try_deserialize(&mut slice)?
-    } else {
-        let mut slice: &[u8] = &data;
-        Round::try_deserialize(&mut slice)?
-    };
+    // ✅ Scoped borrow: read + validate, then release BEFORE any CPI
+    let (mut round, data_len) = {
+        let data = round_ai
+            .try_borrow_data()
+            .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+        
+        // Flexible decoding: handle legacy 231-byte vs modern 248+ byte
+        let round = if data.len() == 231 {
+            let mut padded = [0u8; 248];
+            padded[..231].copy_from_slice(&data);
+            let mut slice: &[u8] = &padded;
+            Round::try_deserialize(&mut slice)?
+        } else {
+            let mut slice: &[u8] = &data;
+            Round::try_deserialize(&mut slice)?
+        };
 
-    require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
-    // Allow sweep of unfinalized rounds ONLY if they never received tickets (skipped pulse phase)
-    if round.committed_count > 0 {
-        require!(round.finalized, TimlgError::NotFinalized);
-    }
-    require!(!round.swept, TimlgError::AlreadySwept);
+        require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
+        // Allow sweep of unfinalized rounds ONLY if they never received tickets
+        if round.committed_count > 0 {
+            require!(round.finalized, TimlgError::NotFinalized);
+        }
+        require!(!round.swept, TimlgError::AlreadySwept);
+
+        (round, data.len())
+    }; // ← data borrow released here
 
     // ✅ grace period gate
     let current_slot = Clock::get()?.slot;
@@ -88,7 +93,7 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         .saturating_add(cfg.claim_grace_slots);
     require!(current_slot > min_sweep_slot, TimlgError::SweepTooEarly);
 
-    // 1) SOL Sweep (Rent)
+    // 1) SOL Sweep (Rent) — safe: no data borrow held
     let vault_lamports = ctx.accounts.vault.to_account_info().lamports();
     if vault_lamports > 0 {
         let ix = system_instruction::transfer(
@@ -111,7 +116,7 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         )?;
     }
 
-    // 2) Token Sweep (Treasury SPL)
+    // 2) Token Sweep (Treasury SPL) — safe: no data borrow held
     let vault_tokens = ctx.accounts.timlg_vault.amount;
     if vault_tokens > 0 {
         let round_le = round_id.to_le_bytes();
@@ -131,18 +136,22 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         )?;
     }
 
-    // ✅ mark swept
+    // ✅ mark swept + write back (new borrow scope after CPIs)
     round.swept = true;
     round.swept_slot = current_slot;
 
-    // Write back
-    if data.len() == 231 {
-        // Manual write-back for legacy to avoid size conflict
-        data[165] = 1; // swept
-        data[166..174].copy_from_slice(&current_slot.to_le_bytes());
-    } else {
-        let mut w = std::io::Cursor::new(&mut data[..]);
-        round.try_serialize(&mut w)?;
+    {
+        let mut data = round_ai
+            .try_borrow_mut_data()
+            .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+        if data_len == 231 {
+            // Manual write-back for legacy to avoid size conflict
+            data[165] = 1; // swept
+            data[166..174].copy_from_slice(&current_slot.to_le_bytes());
+        } else {
+            let mut w = std::io::Cursor::new(&mut data[..]);
+            round.try_serialize(&mut w)?;
+        }
     }
 
     Ok(())
