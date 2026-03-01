@@ -1084,47 +1084,6 @@ pub struct ClaimReward<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-#[derive(Accounts)]
-#[instruction(round_id: u64)]
-pub struct SettleRoundTokens<'info> {
-    #[account(
-        mut,
-        seeds = [crate::CONFIG_SEED],
-        bump = config.bump
-    )]
-    pub config: Account<'info, Config>,
-
-    #[account(
-    seeds = [crate::TOKENOMICS_SEED, config.key().as_ref()],
-    bump = tokenomics.bump
-    )]
-    pub tokenomics: Account<'info, Tokenomics>,
-
-    #[account(
-        mut,
-        seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
-        bump = round.bump
-    )]
-    pub round: Account<'info, Round>,
-
-    #[account(mut, address = config.timlg_mint)]
-    pub timlg_mint: Account<'info, Mint>,
-
-    #[account(mut, address = round.timlg_vault)]
-    pub timlg_vault: Account<'info, TokenAccount>,
-
-    // legacy treasury still exists (may be used later), but unrevealed now goes to replication pool
-    #[account(mut, address = config.treasury)]
-    pub treasury: Account<'info, TokenAccount>,
-
-    #[account(mut, address = tokenomics.replication_pool)]
-    pub replication_pool: Account<'info, TokenAccount>,
-
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    pub token_program: Program<'info, Token>,
-}
 
 #[derive(Accounts)]
 #[instruction(round_id: u64)]

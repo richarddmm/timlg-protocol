@@ -73,7 +73,6 @@ pub fn commit_ticket(
     ticket.commitment = commitment;
     ticket.stake_paid = true;
     ticket.stake_slashed = false;
-    ticket.processed = false;
 
     ticket.revealed = false;
     ticket.guess = 0;
@@ -216,7 +215,6 @@ pub fn commit_batch<'info>(
             commitment: e.commitment,
             stake_paid: true,
             stake_slashed: false,
-            processed: false,
             revealed: false,
             guess: 0,
             win: false,
@@ -407,7 +405,6 @@ pub fn commit_batch_signed<'info>(
             commitment: e.commitment,
             stake_paid: true,
             stake_slashed: false,
-            processed: false,
             revealed: false,
             guess: 0,
             win: false,

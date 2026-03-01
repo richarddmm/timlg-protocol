@@ -114,11 +114,7 @@ pub struct Round {
     pub win_count: u64,
 
     // NEW: number of tickets processed by settlement (winners/losers/unrevealed)
-    pub settled_count: u64,
-
-    pub token_settled: bool,
-    pub token_settled_slot: u64,
-
+    // removed: settled variables for lazy evaluation architecture
 }
 
 #[account]
@@ -138,7 +134,7 @@ pub struct Ticket {
     pub stake_slashed: bool,
 
     // el ticket ya fue procesado por settlement (incluye winners)
-    pub processed: bool,
+    // processed field removed for lazy evaluation
 
     pub revealed: bool,
     pub guess: u8,

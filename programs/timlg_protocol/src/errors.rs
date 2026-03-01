@@ -117,8 +117,6 @@ pub enum TimlgError {
     #[msg("Too early to settle round tokens")]
     SettleTooEarly,
 
-    #[msg("Round tokens already settled")]
-    RoundTokensAlreadySettled,
 
     // -----------------
     // OracleSet

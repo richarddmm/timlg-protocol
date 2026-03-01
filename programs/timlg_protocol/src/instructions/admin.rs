@@ -125,10 +125,6 @@ pub fn create_round_auto(
     round.revealed_count = 0;
     round.win_count = 0;
 
-    round.settled_count = 0;
-    round.token_settled = false;
-    round.token_settled_slot = 0;
-
     rr.next_round_id = rr.next_round_id.checked_add(1).ok_or(TimlgError::MathOverflow)?;
 
     Ok(())
@@ -249,10 +245,6 @@ pub fn create_round(
     round.committed_count = 0;
     round.revealed_count = 0;
     round.win_count = 0;
-
-    round.settled_count = 0;
-    round.token_settled = false;
-    round.token_settled_slot = 0;
 
     Ok(())
 }
