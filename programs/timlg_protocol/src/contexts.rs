@@ -732,20 +732,13 @@ pub struct SweepUnclaimed<'info> {
     )]
     pub config: Account<'info, Config>,
 
-    #[account(
-        mut,
-        seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
-        bump = round.bump
-    )]
-    pub round: Account<'info, Round>,
+    /// CHECK: PDA verification and manual deserialization in instruction logic.
+    #[account(mut)]
+    pub round: AccountInfo<'info>,
 
-    /// CHECK: System-owned PDA vault. Address enforced by seeds/bump.
-    #[account(
-        mut,
-        seeds = [crate::VAULT_SEED, round_id.to_le_bytes().as_ref()],
-        bump = round.vault_bump
-    )]
-    pub vault: UncheckedAccount<'info>,
+    /// CHECK: System-owned PDA vault. PDA verification in instruction logic.
+    #[account(mut)]
+    pub vault: AccountInfo<'info>,
 
     /// ✅ SOL destination
     /// CHECK: System-owned PDA. Address enforced by seeds/bump + address=config.treasury_sol
@@ -762,7 +755,7 @@ pub struct SweepUnclaimed<'info> {
     #[account(
         mut,
         seeds = [crate::TIMLG_VAULT_SEED, round_id.to_le_bytes().as_ref()],
-        bump = round.timlg_vault_bump,
+        bump,
         token::mint = timlg_mint,
         token::authority = round
     )]
@@ -1135,13 +1128,9 @@ pub struct CloseRound<'info> {
     )]
     pub config: Account<'info, Config>,
 
-    #[account(
-        mut,
-        close = admin,
-        seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
-        bump = round.bump
-    )]
-    pub round: Account<'info, Round>,
+    /// CHECK: PDA verification and manual deserialization in instruction logic.
+    #[account(mut)]
+    pub round: AccountInfo<'info>,
 
     // SPL Token Vault (TIMLG)
     // Must be empty before closing. Burn/Sweep should have cleared it.

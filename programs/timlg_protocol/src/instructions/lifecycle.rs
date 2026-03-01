@@ -42,7 +42,38 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     require!(!cfg.paused, TimlgError::Paused);
     require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
 
-    let round = &mut ctx.accounts.round;
+    let round_ai = ctx.accounts.round.to_account_info();
+    let vault_ai = ctx.accounts.vault.to_account_info();
+
+    // ✅ Manual PDA verification (since using AccountInfo in context)
+    let round_le = round_id.to_le_bytes();
+    let (expected_round, _round_bump) = Pubkey::find_program_address(
+        &[ROUND_SEED, &round_le],
+        ctx.program_id,
+    );
+    require_keys_eq!(expected_round, round_ai.key(), TimlgError::TicketPdaMismatch);
+
+    let (expected_vault, _vault_bump) = Pubkey::find_program_address(
+        &[VAULT_SEED, &round_le],
+        ctx.program_id,
+    );
+    require_keys_eq!(expected_vault, vault_ai.key(), TimlgError::TicketPdaMismatch);
+
+    let mut data = round_ai
+        .try_borrow_mut_data()
+        .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+    
+    // Flexible decoding: handle legacy 231-byte vs modern 248+ byte
+    let mut round = if data.len() == 231 {
+        let mut padded = [0u8; 248];
+        padded[..231].copy_from_slice(&data);
+        let mut slice: &[u8] = &padded;
+        Round::try_deserialize(&mut slice)?
+    } else {
+        let mut slice: &[u8] = &data;
+        Round::try_deserialize(&mut slice)?
+    };
+
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     // Allow sweep of unfinalized rounds ONLY if they never received tickets (skipped pulse phase)
     if round.committed_count > 0 {
@@ -92,7 +123,7 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
                 Transfer {
                     from: ctx.accounts.timlg_vault.to_account_info(),
                     to: ctx.accounts.treasury.to_account_info(),
-                    authority: round.to_account_info(),
+                    authority: round_ai.clone(),
                 },
                 signer_seeds,
             ),
@@ -103,6 +134,16 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     // ✅ mark swept
     round.swept = true;
     round.swept_slot = current_slot;
+
+    // Write back
+    if data.len() == 231 {
+        // Manual write-back for legacy to avoid size conflict
+        data[165] = 1; // swept
+        data[166..174].copy_from_slice(&current_slot.to_le_bytes());
+    } else {
+        let mut w = std::io::Cursor::new(&mut data[..]);
+        round.try_serialize(&mut w)?;
+    }
 
     Ok(())
 }
@@ -239,7 +280,30 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     require!(!cfg.paused, TimlgError::Paused);
     require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
 
-    let round = &ctx.accounts.round;
+    let round_ai = ctx.accounts.round.to_account_info();
+
+    // ✅ Manual PDA verification
+    let round_le = round_id.to_le_bytes();
+    let (expected_round, _round_bump) = Pubkey::find_program_address(
+        &[ROUND_SEED, &round_le],
+        ctx.program_id,
+    );
+    require_keys_eq!(expected_round, round_ai.key(), TimlgError::TicketPdaMismatch);
+
+    let data = round_ai
+        .try_borrow_data()
+        .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+    
+    let round = if data.len() == 231 {
+        let mut padded = [0u8; 248];
+        padded[..231].copy_from_slice(&data);
+        let mut slice: &[u8] = &padded;
+        Round::try_deserialize(&mut slice)?
+    } else {
+        let mut slice: &[u8] = &data;
+        Round::try_deserialize(&mut slice)?
+    };
+
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     
     // Safety checks: ensure round is completely done
@@ -276,7 +340,7 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     let cpi_accounts = token::CloseAccount {
         account: ctx.accounts.timlg_vault.to_account_info(),
         destination: ctx.accounts.admin.to_account_info(),
-        authority: round.to_account_info(),
+        authority: round_ai.clone(),
     };
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
@@ -285,7 +349,18 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     );
     token::close_account(cpi_ctx)?;
 
-    // round PDA is closed automatically by the `close` constraint in context.
+    // ✅ Manual Close of the Round PDA: transfer lamports and zero data
+    let dest_ai = ctx.accounts.admin.to_account_info();
+    let source_ai = round_ai.clone();
+    let dest_lamports = dest_ai.lamports();
+    let source_lamports = source_ai.lamports();
+    **dest_ai.lamports.borrow_mut() = dest_lamports
+        .checked_add(source_lamports)
+        .ok_or(TimlgError::MathOverflow)?;
+    **source_ai.lamports.borrow_mut() = 0;
+    
+    // Zero out data to prevent any re-use
+    source_ai.data.borrow_mut().fill(0);
     
     Ok(())
 }
