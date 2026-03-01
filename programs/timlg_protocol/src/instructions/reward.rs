@@ -9,7 +9,20 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     let ticket = &mut ctx.accounts.ticket;
     let tokenomics = &ctx.accounts.tokenomics;
 
-    require!(round.finalized, TimlgError::NotFinalized);
+    let current_slot = Clock::get()?.slot;
+
+    // --- AUTO-FINALIZE lógica ---
+    // Si la ronda aún no está finalizada formalmente pero ya venció y tiene pulso...
+    if !round.finalized {
+        require!(round.pulse_set, TimlgError::PulseNotSet);
+        require!(
+            current_slot > round.reveal_deadline_slot,
+            TimlgError::CannotFinalizeYet
+        );
+        round.finalized = true;
+        round.finalized_slot = current_slot;
+        round.state = crate::state::RoundState::Finalized as u8;
+    }
 
     // si ya se hizo sweep, se cerró la ventana de claim
     require!(!round.swept, TimlgError::ClaimAfterSweep);
@@ -22,6 +35,21 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     require!(ticket.revealed, TimlgError::TicketNotRevealed);
     require!(ticket.win, TimlgError::NotWinner);
     require!(!ticket.claimed, TimlgError::AlreadyClaimed);
+
+    // --- AUTO-SETTLE lógica (Paso A) ---
+    // Asentamos el ticket ganador si no estaba procesado previamente
+    if !ticket.processed {
+        ticket.processed = true;
+        round.settled_count = round
+            .settled_count
+            .checked_add(1)
+            .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+        
+        if round.settled_count == round.committed_count {
+            round.token_settled = true;
+            round.token_settled_slot = current_slot;
+        }
+    }
 
     // 1) refund stake: transfer stake_amount desde timlg_vault al user ATA
     let round_le = round.round_id.to_le_bytes();

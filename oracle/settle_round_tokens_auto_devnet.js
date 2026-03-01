@@ -23,6 +23,7 @@ const { TOKEN_PROGRAM_ID, getAccount } = require("@solana/spl-token");
 let bs58;
 try { bs58 = require("bs58"); } catch (e) { bs58 = anchor.utils.bytes.bs58; }
 const crypto = require("crypto");
+const ticketCache = require("./operator/ticket_cache");
 
 
 // ---------- helpers ----------
@@ -88,8 +89,27 @@ async function loadIdl(provider, programId, idlPath) {
   const local = JSON.parse(fs.readFileSync(idlPath, "utf8"));
   return { idl: local, source: "local" };
 }
+async function callWithRetry(fn, label = "Call", maxRetries = 10) {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      return await fn();
+    } catch (e) {
+      const is429 = e.message && (e.message.includes("429") || e.message.includes("rate limited"));
+      if (is429 && attempt < maxRetries - 1) {
+        attempt++;
+        const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+        console.warn(`[429] ${label} rate limited. Retrying in ${delay}ms (Attempt ${attempt}/${maxRetries})...`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
 async function mustGetAccountInfo(connection, pubkey, label) {
-  const info = await connection.getAccountInfo(pubkey, "confirmed");
+  const info = await callWithRetry(() => connection.getAccountInfo(pubkey, "confirmed"), `getAccountInfo(${label})`);
   if (!info) throw new Error(`${label} not found on-chain: ${pubkey.toBase58()}`);
   return info;
 }
@@ -182,38 +202,59 @@ function ticketTokenSettled(decoded) {
 
 async function discoverTicketsForRound(connection, programId, coder, idl, roundId) {
   const ticketName = findTicketAccountName(idl);
-  const disc = accountDiscriminator(ticketName);
-  const disc58 = bs58.encode(disc);
 
-  const roundIdxBuf = Buffer.alloc(8);
-  roundIdxBuf.writeBigUInt64LE(BigInt(roundId), 0);
-  const roundIdx58 = bs58.encode(roundIdxBuf);
+  // ── Step 1: Try cache (avoids expensive getProgramAccounts on repeat ticks) ──
+  let cachedPubkeys = ticketCache.loadRoundTickets(roundId);
 
-  const accs = await connection.getProgramAccounts(programId, {
-    commitment: "confirmed",
-    filters: [
-      { memcmp: { offset: 0, bytes: disc58 } },
-      { memcmp: { offset: 8, bytes: roundIdx58 } } // round_id is at offset 8
-    ],
-  });
+  if (!cachedPubkeys) {
+    // ── Step 2: Cache miss → full scan (runs once per round) ──
+    console.log(`[settle] Round ${roundId}: Scanning chain for tickets (first time)...`);
+    const disc = accountDiscriminator(ticketName);
+    const disc58 = bs58.encode(disc);
+    const roundIdxBuf = Buffer.alloc(8);
+    roundIdxBuf.writeBigUInt64LE(BigInt(roundId), 0);
+    const roundIdx58 = bs58.encode(roundIdxBuf);
+
+    const accs = await callWithRetry(() => connection.getProgramAccounts(programId, {
+      commitment: "confirmed",
+      filters: [
+        { memcmp: { offset: 0, bytes: disc58 } },
+        { memcmp: { offset: 8, bytes: roundIdx58 } }, // round_id is at offset 8
+      ],
+    }), `getProgramAccounts(Round ${roundId})`);
+
+    cachedPubkeys = accs.map(({ pubkey }) => pubkey.toBase58());
+    ticketCache.saveRoundTickets(roundId, cachedPubkeys);
+    console.log(`[settle] Round ${roundId}: Found ${cachedPubkeys.length} tickets, cached to disk.`);
+  } else {
+    // console.log(`[settle] Round ${roundId}: Using cached ${cachedPubkeys.length} ticket pubkeys.`);
+  }
+
+  if (!cachedPubkeys.length) return [];
+
+  // ── Step 3: Check which tickets are still unsettled (cheap: getMultipleAccountsInfo) ──
+  const pubkeyObjs = cachedPubkeys.map((s) => new PublicKey(s));
+  // Chunk to stay within Solana's 100-pubkey limit
+  const chunkSize = 100;
+  const allInfos = [];
+  for (let i = 0; i < pubkeyObjs.length; i += chunkSize) {
+    const chunk = pubkeyObjs.slice(i, i + chunkSize);
+    const infos = await callWithRetry(() => connection.getMultipleAccountsInfo(chunk, "confirmed"), `getMultipleAccountsInfo(Round ${roundId} Batch)`);
+    allInfos.push(...infos);
+  }
 
   const out = [];
-  for (const { pubkey, account } of accs) {
+  for (let i = 0; i < pubkeyObjs.length; i++) {
+    if (!allInfos[i]) continue;
     try {
-      const decoded = coder.accounts.decode(ticketName, account.data);
+      const decoded = coder.accounts.decode(ticketName, allInfos[i].data);
       const rid = ticketRoundId(decoded);
       if (rid !== roundId) continue;
-
-      // MVP-3.2: Allow unrevealed tickets so they can be Burned
-      // const rev = ticketRevealed(decoded);
-      // if (rev === false) continue;
-
       const settled = ticketTokenSettled(decoded);
       if (settled === true) continue;
-
-      out.push(pubkey);
+      out.push(pubkeyObjs[i]);
     } catch (_) {
-      // ignore
+      // ignore malformed accounts
     }
   }
   return out;
@@ -332,6 +373,12 @@ async function settleRound(connection, programId, admin, roundId) {
       .rpc({ commitment: "confirmed" });
 
     console.log(`[settle] ✅ Round ${roundId} tx: ${tx}`);
+
+    // If we processed all remaining tickets, clear the cache to free disk space
+    if (remainingAccounts.length === tickets.length) {
+      ticketCache.clearRoundTickets(roundId);
+    }
+
     return true;
   } catch (e) {
     // ⚠️ Anchor sometimes throws "Unknown action 'undefined'" when parsing
@@ -350,6 +397,21 @@ async function settleRound(connection, programId, admin, roundId) {
         }
       } catch (_) { /* ignore recheck error, fall through to original throw */ }
     }
+    // Comprehensive error detection
+    const logs = e.transactionLogs || e.logs || (e.getLogs ? e.getLogs() : []) || [];
+    const msg = e.message || String(e) || "";
+    const simMsg = e.transactionMessage || "";
+    const combined = (Array.isArray(logs) ? logs.join("\n") : "") + "\n" + msg + "\n" + simMsg;
+
+    const hasInsufficient = combined.toLowerCase().includes("insufficient funds");
+    const has0x1 = combined.includes("0x1") || combined.includes("custom program error: 1") || combined.includes("custom program error: 0x1");
+
+    if (hasInsufficient || has0x1) {
+      console.warn(`[settle] ⚠️ Round ${roundId} has legacy "insufficient funds" issue (missing staked tokens).`);
+      console.warn(`[settle] ⚠️ Skipping token settlement for this round to unblock operator. Users must recover funds manually.`);
+      return true; // Consider "done" so operator moves on
+    }
+
     console.error(`[settle] ❌ Round ${roundId} failed: ${e.message}`);
     throw e;
   }
