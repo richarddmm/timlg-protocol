@@ -290,46 +290,45 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     );
     require_keys_eq!(expected_round, round_ai.key(), TimlgError::TicketPdaMismatch);
 
-    let data = round_ai
-        .try_borrow_data()
-        .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
-    
-    let round = if data.len() == 231 {
-        let mut padded = [0u8; 248];
-        padded[..231].copy_from_slice(&data);
-        let mut slice: &[u8] = &padded;
-        Round::try_deserialize(&mut slice)?
-    } else {
-        let mut slice: &[u8] = &data;
-        Round::try_deserialize(&mut slice)?
+    let (round_id_val, bump_val) = {
+        let data = round_ai
+            .try_borrow_data()
+            .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+        
+        let round = if data.len() == 231 {
+            let mut padded = [0u8; 248];
+            padded[..231].copy_from_slice(&data);
+            let mut slice: &[u8] = &padded;
+            Round::try_deserialize(&mut slice)?
+        } else {
+            let mut slice: &[u8] = &data;
+            Round::try_deserialize(&mut slice)?
+        };
+
+        require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
+        
+        // Safety checks: ensure round is completely done
+        if round.committed_count > 0 {
+            require!(round.finalized, TimlgError::NotFinalized);
+        }
+        // If no tickets were committed, token_settled might be false, which is fine.
+        let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
+        require!(
+            round.token_settled || round.committed_count == 0 || vault_is_empty,
+            TimlgError::RoundTokensNotSettled
+        );
+        require!(round.swept, TimlgError::NotSwept);
+
+        // Also check that timlg_vault is empty (amount == 0)
+        require!(ctx.accounts.timlg_vault.amount == 0, TimlgError::VaultNotEmpty);
+
+        (round.round_id, round.bump)
     };
-
-    require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
-    
-    // Safety checks: ensure round is completely done
-    if round.committed_count > 0 {
-        require!(round.finalized, TimlgError::NotFinalized);
-    }
-    // If no tickets were committed, token_settled might be false, which is fine.
-    // If vault is already empty, we can allow closure even if counters are desynced (escape hatch)
-    let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
-    require!(
-        round.token_settled || round.committed_count == 0 || vault_is_empty,
-        TimlgError::RoundTokensNotSettled
-    );
-    require!(round.swept, TimlgError::NotSwept);
-
-    // Also check that timlg_vault is empty (amount == 0)
-    // The `close` constraint will transfer any remaining rent lamports to admin,
-    // but if there are tokens left, we might burn them or just fail?
-    // SPL Token account close requires balance to be 0 for the account data.
-    // The anchor `close` constraint handles the account lamports, but we should ensure token balance is 0.
-    require!(ctx.accounts.timlg_vault.amount == 0, TimlgError::VaultNotEmpty);
 
     // Close the Token Account via CPI
     // The round PDA is the authority.
-    let round_id_bytes = round.round_id.to_le_bytes();
-    let bump = round.bump;
+    let round_id_bytes = round_id_val.to_le_bytes();
+    let bump = bump_val;
     let seeds = &[
         crate::ROUND_SEED,
         round_id_bytes.as_ref(),
