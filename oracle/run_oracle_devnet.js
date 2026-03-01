@@ -124,7 +124,7 @@ function pickInstructionName(idl, preferred) {
 async function main() {
   const rpcUrl = process.env.RPC_URL || "https://api.devnet.solana.com";
   const programId = new PublicKey(mustEnv("PROGRAM_ID"));
-  const idlPath = expandPath(process.env.IDL_PATH || "./target/idl/timlg_protocol.json");
+  const idlPath = expandPath(process.env.IDL_PATH || "./oracle/timlg_protocol.json");
 
   const relayer = loadKeypair(mustEnv("RELAYER_KEYPAIR"));
 
