@@ -5,7 +5,7 @@ use crate::{errors::TimlgError, ClaimReward};
 
 pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> Result<()> {
     let cfg = &ctx.accounts.config;
-    let round = &ctx.accounts.round;
+    let round = &mut ctx.accounts.round;
     let ticket = &mut ctx.accounts.ticket;
     let tokenomics = &ctx.accounts.tokenomics;
 

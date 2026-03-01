@@ -350,7 +350,7 @@ pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> 
     require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
 
     let treasury_info = ctx.accounts.treasury_sol.to_account_info();
-    let admin_info = ctx.accounts.admin.to_account_info();
+    let _admin_info = ctx.accounts.admin.to_account_info();
 
     let rent = Rent::get()?;
     let min_rent = rent.minimum_balance(0); // system account
@@ -368,10 +368,10 @@ pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> 
     );
 
     // Generate signer seeds for PDA
-    let Bump = ctx.accounts.config.treasury_sol_bump;
+    let config_bump = ctx.accounts.config.treasury_sol_bump;
     let seeds = &[
         crate::TREASURY_SOL_SEED,
-        &[Bump],
+        &[config_bump],
     ];
     let signer = &[&seeds[..]];
 
@@ -469,7 +469,7 @@ pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
     }
 
     // 4. Realloc
-    config_info.realloc(new_size, false)?;
+    config_info.realloc(new_size, false)?; // Reverted to realloc since resize isn't always stable on old anchors
     
     msg!("Config migrated to size: {}", new_size);
 
