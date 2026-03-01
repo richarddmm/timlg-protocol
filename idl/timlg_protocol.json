@@ -3152,86 +3152,6 @@
       ]
     },
     {
-      "name": "set_pulse_mock",
-      "discriminator": [
-        32,
-        132,
-        64,
-        81,
-        204,
-        96,
-        99,
-        168
-      ],
-      "accounts": [
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103,
-                  95,
-                  118,
-                  51
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "round",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  111,
-                  117,
-                  110,
-                  100,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "round_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "admin",
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "round_id",
-          "type": "u64"
-        },
-        {
-          "name": "pulse",
-          "type": {
-            "array": [
-              "u8",
-              64
-            ]
-          }
-        }
-      ]
-    },
-    {
       "name": "set_pulse_signed",
       "discriminator": [
         50,
@@ -3308,6 +3228,128 @@
               64
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "settle_round_tokens",
+      "discriminator": [
+        237,
+        209,
+        221,
+        2,
+        7,
+        78,
+        113,
+        158
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  51
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenomics",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  111,
+                  109,
+                  105,
+                  99,
+                  115,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  117,
+                  110,
+                  100,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "timlg_mint",
+          "writable": true
+        },
+        {
+          "name": "timlg_vault",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "replication_pool",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "round_id",
+          "type": "u64"
         }
       ]
     },
@@ -4263,36 +4305,41 @@
     },
     {
       "code": 6044,
+      "name": "RoundTokensAlreadySettled",
+      "msg": "Round tokens already settled"
+    },
+    {
+      "code": 6045,
       "name": "OracleSetFull",
       "msg": "OracleSet is full"
     },
     {
-      "code": 6045,
+      "code": 6046,
       "name": "OracleAlreadyExists",
       "msg": "Oracle already exists in allowlist"
     },
     {
-      "code": 6046,
+      "code": 6047,
       "name": "OracleNotFound",
       "msg": "Oracle not found in allowlist"
     },
     {
-      "code": 6047,
+      "code": 6048,
       "name": "InvalidThreshold",
       "msg": "Invalid threshold"
     },
     {
-      "code": 6048,
+      "code": 6049,
       "name": "ThresholdExceedsOracleCount",
       "msg": "Threshold exceeds current oracle count"
     },
     {
-      "code": 6049,
+      "code": 6050,
       "name": "InvalidFeeBps",
       "msg": "Invalid fee bps (must be 0..=10_000)."
     },
     {
-      "code": 6050,
+      "code": 6051,
       "name": "InvalidBps",
       "msg": "Invalid basis points (must be <= 10000)"
     },
@@ -4646,6 +4693,18 @@
           {
             "name": "win_count",
             "type": "u64"
+          },
+          {
+            "name": "settled_count",
+            "type": "u64"
+          },
+          {
+            "name": "token_settled",
+            "type": "bool"
+          },
+          {
+            "name": "token_settled_slot",
+            "type": "u64"
           }
         ]
       }
@@ -4710,6 +4769,10 @@
           },
           {
             "name": "stake_slashed",
+            "type": "bool"
+          },
+          {
+            "name": "processed",
             "type": "bool"
           },
           {

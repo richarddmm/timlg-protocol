@@ -120,31 +120,6 @@ pub fn derive_bit_index(round_id: u64, user: &Pubkey, nonce: u64) -> u16 {
     u16::from_le_bytes([h[0], h[1]]) % 512
 }
 
-#[cfg(test)]
-mod consistency_tests {
-    use super::*;
-    use std::str::FromStr;
-
-    #[test]
-    fn test_bit_index_consistency() {
-        let round_id: u64 = 37000;
-        let user = Pubkey::from_str("3ubbYD5VrSpQQW1GLWubkH9owvZK5GZVjvBnoADZSxpo").unwrap();
-        let nonce: u64 = 12345678;
-        
-        // Manual trace
-        let h = solana_sha256_hasher::hashv(&[
-            b"bitindex".as_ref(),
-            round_id.to_le_bytes().as_ref(),
-            user.as_ref(),
-            nonce.to_le_bytes().as_ref(),
-        ]).to_bytes();
-        println!("Rust Hash Bytes: {:?}", &h[0..8]);
-        
-        let idx = derive_bit_index(round_id, &user, nonce);
-        println!("Rust Bit Index: {}", idx);
-    }
-}
-
 // -------------------------
 // Commit hash + pulse bit
 // -------------------------

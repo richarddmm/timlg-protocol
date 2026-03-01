@@ -240,7 +240,14 @@ pub mod timlg_protocol {
         escrow::withdraw_escrow(ctx, amount)
     }
 
-    // removed `settle_round_tokens` routing
+    // ✅ FIX lifetimes: debe coincidir con lifecycle::settle_round_tokens
+    pub fn settle_round_tokens<'info>(
+        ctx: Context<'_, '_, 'info, 'info, SettleRoundTokens<'info>>,
+        round_id: u64,
+    ) -> Result<()> {
+        lifecycle::settle_round_tokens(ctx, round_id)
+    }
+
     pub fn initialize_round_registry(ctx: Context<InitializeRoundRegistry>, start_round_id: u64) -> Result<()> {
         instructions::admin::initialize_round_registry(ctx, start_round_id)
     }

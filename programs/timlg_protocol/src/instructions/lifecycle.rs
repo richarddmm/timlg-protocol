@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{program::invoke_signed, system_instruction};
 
-use anchor_spl::token::{self, Transfer};
-use crate::state::Round;
+use anchor_spl::token::{self, Burn, Transfer};
+use crate::state::{Ticket, Round};
 use crate::constants::*;
-use crate::ROUND_SEED;
+use crate::{SettleRoundTokens, TICKET_SEED, ROUND_SEED};
+
 use crate::{
     errors::TimlgError,
     state::RoundState,
@@ -106,7 +107,132 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     Ok(())
 }
 
+pub fn settle_round_tokens<'info>(
+    ctx: Context<'_, '_, 'info, 'info, SettleRoundTokens<'info>>,
+    round_id: u64,
+) -> Result<()> {
+    let cfg = &ctx.accounts.config;
+    require!(!cfg.paused, TimlgError::Paused);
 
+
+    // ✅ toma AccountInfo del authority ANTES para evitar E0502
+    let round_ai = ctx.accounts.round.to_account_info();
+
+    let round = &mut ctx.accounts.round;
+    require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
+    let current_slot = Clock::get()?.slot;
+    require!(
+        current_slot > round.reveal_deadline_slot,
+        TimlgError::SettleTooEarly
+    );
+
+    // Auto-finalize if needed (Robustness: allow settle to trigger finalization)
+    if !round.finalized {
+        require!(round.pulse_set, TimlgError::PulseNotSet);
+        round.finalized = true;
+        round.finalized_slot = current_slot;
+        round.state = crate::state::RoundState::Finalized as u8;
+    }
+
+    require!(!round.token_settled, TimlgError::RoundTokensAlreadySettled);
+
+    let stake = cfg.stake_amount;
+    let mut losers: u64 = 0;
+    // unrevealed count not needed for logic, just accounting if we wanted stats
+
+    let round_le = round_id.to_le_bytes();
+
+    for ai in ctx.remaining_accounts.iter() {
+        require!(ai.owner == ctx.program_id, TimlgError::TicketNotOwnedByProgram);
+
+        let mut data = ai
+            .try_borrow_mut_data()
+            .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+
+        let mut slice: &[u8] = &data;
+        let mut ticket: Ticket = Ticket::try_deserialize(&mut slice)
+            .map_err(|_| error!(TimlgError::TicketPdaMismatch))?;
+
+        require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
+        require!(ticket.stake_paid, TimlgError::StakeNotPaid);
+
+        // --- PDA sanity ---
+        let nonce_le = ticket.nonce.to_le_bytes();
+        let (expected, bump) = Pubkey::find_program_address(
+            &[TICKET_SEED, &round_le, ticket.user.as_ref(), &nonce_le],
+            ctx.program_id,
+        );
+        require_keys_eq!(expected, *ai.key, TimlgError::TicketPdaMismatch);
+        require!(bump == ticket.bump, TimlgError::TicketPdaMismatch);
+
+        // ✅ Incremental settlement: skip already processed tickets
+        if ticket.processed {
+            continue;
+        }
+
+        // Classify and account this ticket exactly once
+        // Classify and account this ticket exactly once
+        // MVP-3.2: Burn unrevealed tickets same as losers
+        if !ticket.revealed || !ticket.win {
+            losers = losers
+                .checked_add(1)
+                .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+            ticket.stake_slashed = true; // burn will happen for this call
+        } else {
+            // winner: no burn/transfer now, stake stays in vault for claim
+        }
+
+        // ✅ Mark processed + bump round.settled_count
+        ticket.processed = true;
+        round.settled_count = round
+            .settled_count
+            .checked_add(1)
+            .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+        // write back
+        let mut w = std::io::Cursor::new(&mut data[..]);
+        ticket
+            .try_serialize(&mut w)
+            .map_err(|_| error!(TimlgError::TicketPdaMismatch))?;
+    }
+
+    // Tokenomics:
+    // - losers (incl unrevealed) => burn from timlg_vault
+    // (winners stay in timlg_vault so claim_reward can refund stake)
+
+    let total_to_burn = stake
+        .checked_mul(losers)
+        .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+    let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
+
+    // Burn losers from the round vault (authority = Round PDA)
+    // Burn losers from the round vault (authority = Round PDA)
+    if total_to_burn > 0 {
+        token::burn(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                Burn {
+                    mint: ctx.accounts.timlg_mint.to_account_info(),
+                    from: ctx.accounts.timlg_vault.to_account_info(),
+                    authority: round_ai.clone(),
+                },
+                signer_seeds,
+            ),
+            total_to_burn,
+        )?;
+    }
+
+    // Removed transfer to replication_pool (MVP-3.2)
+
+    // Only mark fully settled when all committed tickets have been processed
+    if round.settled_count == round.committed_count {
+        round.token_settled = true;
+        round.token_settled_slot = current_slot;
+    }
+
+    Ok(())
+}
 
 pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     let cfg = &ctx.accounts.config;
@@ -120,12 +246,14 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     if round.committed_count > 0 {
         require!(round.finalized, TimlgError::NotFinalized);
     }
-    
+    // If no tickets were committed, token_settled might be false, which is fine.
+    // If vault is already empty, we can allow closure even if counters are desynced (escape hatch)
     let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
     require!(
-        round.swept || round.committed_count == 0 || vault_is_empty,
-        TimlgError::NotSwept
+        round.token_settled || round.committed_count == 0 || vault_is_empty,
+        TimlgError::RoundTokensNotSettled
     );
+    require!(round.swept, TimlgError::NotSwept);
 
     // Also check that timlg_vault is empty (amount == 0)
     // The `close` constraint will transfer any remaining rent lamports to admin,
@@ -188,7 +316,7 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
 
     let ticket = &mut ctx.accounts.ticket;
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
-    require!(!ticket.claimed, TimlgError::AlreadyClaimed);
+    require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);
     
     // Refund: Transfer Stake from Vault -> User
     // We only refund the STAKE amount (ticket price). rent is handled by 'close' logic.
@@ -216,8 +344,8 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         round.committed_count -= 1;
     }
 
-    // ✅ Use claimed to prevent double-refund and enable close_ticket
-    ticket.claimed = true;
+    // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
+    ticket.processed = true;
 
     Ok(())
 }
@@ -240,9 +368,13 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
     let round_alive = ctx.accounts.round.lamports() > 0;
 
     if round_alive {
+        // Condition A: Ticket processed (Settled or Refunded w/ new fix)
+        let is_processed = ticket.processed;
+        
+        // Condition B: Refund Mode Active (Timeout + No Pulse) - Allows closing legacy refunded tickets
+        // Need to deserialize round state from UncheckedAccount to check flags
         let mut is_refund_mode = false;
         let mut is_finalized_status = false;
-        let mut is_swept = false;
         
         if !ctx.accounts.round.data_is_empty() {
              let round_data = ctx.accounts.round.try_borrow_data()?;
@@ -254,29 +386,53 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
                      is_refund_mode = !round_state.pulse_set && 
                                       current_slot > round_state.reveal_deadline_slot.saturating_add(timeout_slots);
                      is_finalized_status = round_state.finalized;
-                     is_swept = round_state.swept;
 
-                     if round_state.committed_count > 0 {
-                         round_state.committed_count -= 1;
-                     }
+                     // ✅ FIXED: If ticket is NOT processed but we are closing it (because round is finalized),
+                     // we MUST decrement committed_count to prevent automated settlement from sticking.
+                         if round_state.committed_count > 0 {
+                             round_state.committed_count -= 1;
+                         }
 
-                     drop(round_data);
-                     let mut round_data_mut = ctx.accounts.round.try_borrow_mut_data()?;
-                     let mut w = std::io::Cursor::new(&mut round_data_mut[..]);
-                     round_state.try_serialize(&mut w)?;
+                         // ✅ NEW: If this makes the round "empty" or fully processed, mark as settled
+                         if round_state.committed_count == round_state.settled_count {
+                             round_state.token_settled = true;
+                             round_state.token_settled_slot = current_slot;
+                         }
+                         
+                         // Write back updated round state
+                         drop(round_data); // Drop borrow before borrow_mut
+                         let mut round_data_mut = ctx.accounts.round.try_borrow_mut_data()?;
+                         let mut w = std::io::Cursor::new(&mut round_data_mut[..]);
+                         round_state.try_serialize(&mut w)?;
                  }
              }
         }
 
-        let is_loser = !ticket.revealed || (ticket.revealed && !ticket.win);
-
-        if ticket.claimed || is_swept || is_refund_mode || (is_finalized_status && is_loser) {
-            // OK to close. A winner cannot be closed unless it has claimed its reward or the round was swept.
+        if is_processed || is_refund_mode || is_finalized_status {
+            if ticket.win && !ticket.claimed && !is_refund_mode { 
+                // Winners must claim first (unless in refund mode or round is swept)
+                if !is_finalized_status {
+                    // If round is NOT finalized, it might still reach a refund mode
+                    require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                } else {
+                    // Round IS finalized. Check if swept.
+                    let round_data = ctx.accounts.round.try_borrow_data()?;
+                    let mut slice: &[u8] = &round_data;
+                    if let Ok(round_state) = Round::try_deserialize(&mut slice) {
+                        if !round_state.swept {
+                             require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                        }
+                    } else {
+                        // Could not deserialize, safer to require claim
+                        require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                    }
+                }
+            }
+            // OK to close
         } else {
-             return Err(error!(TimlgError::WinnerMustClaimFirst));
+            return Err(error!(TimlgError::TicketNotProcessed));
         }
     } else {
-
         // If round is dead (deleted/archived), allow closing any ticket to reclaim rent.
         // It's safe because the round state no longer exists to pay out rewards.
     }
@@ -299,8 +455,8 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
         TimlgError::RefundTooEarly
     );
 
-    let ticket = &mut ctx.accounts.ticket;
-    require!(!ticket.claimed, TimlgError::AlreadyClaimed);
+    let ticket = &mut ctx.accounts.ticket; // Mutable for processed flag
+    require!(!ticket.processed, TimlgError::TicketAlreadyProcessed);
 
     // Refund: Transfer Stake from Vault -> User
     let stake_amount = cfg.stake_amount;
@@ -326,8 +482,8 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
         round.committed_count -= 1;
     }
 
-    // ✅ Fix: Mark as claimed
-    ticket.claimed = true;
+    // ✅ Fix: Mark as processed
+    ticket.processed = true;
 
     Ok(())
 }
