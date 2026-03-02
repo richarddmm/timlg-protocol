@@ -441,8 +441,7 @@
           "name": "round",
           "docs": [
             "Address verification is secondary as Ticket PDA already enforces the round_id."
-          ],
-          "writable": true
+          ]
         },
         {
           "name": "ticket",

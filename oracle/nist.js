@@ -49,16 +49,24 @@ async function waitForNistPulseBytes(chainIndex, pulseIndex, opts = {}) {
   const timeoutMs = opts.timeoutMs ?? 5 * 60 * 1000;
 
   const t0 = Date.now();
+  let attempt = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       return await fetchNistPulseBytes(chainIndex, pulseIndex);
     } catch (e) {
-      if (e && e.code === "NIST_404") {
+      attempt++;
+      const is404 = e && e.code === "NIST_404";
+      const isNetwork = e && (e.code === "ETIMEDOUT" || e.code === "ENETUNREACH" || e.code === "ECONNRESET");
+
+      if (is404 || isNetwork) {
         if (Date.now() - t0 > timeoutMs) {
-          throw new Error(`Timeout waiting NIST pulse chain=${chainIndex} pulse=${pulseIndex}`);
+          throw new Error(`Timeout waiting NIST pulse chain=${chainIndex} pulse=${pulseIndex} (${e.message})`);
         }
-        await new Promise((r) => setTimeout(r, pollMs));
+        // Jittered backoff: pollMs + random(0-2000)
+        const backoff = pollMs + Math.floor(Math.random() * 2000);
+        console.warn(`[nist] Attempt ${attempt} failed (${e.message}). Retrying in ${backoff}ms...`);
+        await new Promise((r) => setTimeout(r, backoff));
         continue;
       }
       throw e;
