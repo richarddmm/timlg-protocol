@@ -325,28 +325,7 @@
         },
         {
           "name": "round",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  111,
-                  117,
-                  110,
-                  100,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "round_id"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "timlg_vault",
@@ -441,7 +420,8 @@
           "name": "round",
           "docs": [
             "Address verification is secondary as Ticket PDA already enforces the round_id."
-          ]
+          ],
+          "writable": true
         },
         {
           "name": "ticket",
@@ -1818,7 +1798,7 @@
         {
           "name": "treasury_sol",
           "docs": [
-            "✅ NUEVO: Treasury SOL (lamports) como system-owned PDA (igual que vault)"
+            "\u2705 NUEVO: Treasury SOL (lamports) como system-owned PDA (igual que vault)"
           ],
           "writable": true,
           "pda": {
@@ -3388,58 +3368,16 @@
         },
         {
           "name": "round",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  111,
-                  117,
-                  110,
-                  100,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "round_id"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  97,
-                  117,
-                  108,
-                  116,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "round_id"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "treasury_sol",
           "docs": [
-            "✅ SOL destination"
+            "\u2705 SOL destination"
           ],
           "writable": true,
           "pda": {
@@ -3470,7 +3408,7 @@
         {
           "name": "timlg_vault",
           "docs": [
-            "✅ SPL vault per round"
+            "\u2705 SPL vault per round"
           ],
           "writable": true,
           "pda": {
@@ -3504,7 +3442,7 @@
         {
           "name": "treasury",
           "docs": [
-            "✅ SPL destination (from config)"
+            "\u2705 SPL destination (from config)"
           ],
           "writable": true,
           "pda": {

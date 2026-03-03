@@ -461,53 +461,65 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         
         if !ctx.accounts.round.data_is_empty() {
              let round_data = ctx.accounts.round.try_borrow_data()?;
-             let mut slice: &[u8] = &round_data;
-             if let Ok(mut round_state) = Round::try_deserialize(&mut slice) {
+             let data_len = round_data.len();
+             
+             let round_state_opt = if data_len == 231 {
+                 let mut padded = [0u8; 248];
+                 padded[..231].copy_from_slice(&round_data);
+                 let mut slice: &[u8] = &padded;
+                 Round::try_deserialize(&mut slice).ok()
+             } else {
+                 let mut slice: &[u8] = &round_data;
+                 Round::try_deserialize(&mut slice).ok()
+             };
+
+             if let Some(mut round_state) = round_state_opt {
                  if round_state.round_id == round_id {
                      let current_slot = Clock::get()?.slot;
-                     let timeout_slots = REFUND_TIMEOUT_SLOTS;
                      is_refund_mode = !round_state.pulse_set && 
-                                      current_slot > round_state.reveal_deadline_slot.saturating_add(timeout_slots);
+                                      current_slot > round_state.reveal_deadline_slot.saturating_add(REFUND_TIMEOUT_SLOTS);
                      is_finalized_status = round_state.finalized;
 
-                     // ✅ FIXED: If ticket is NOT processed but we are closing it (because round is finalized),
-                     // we MUST decrement committed_count to prevent automated settlement from sticking.
-                         if round_state.committed_count > 0 {
-                             round_state.committed_count -= 1;
-                         }
-
-                         // ✅ NEW: If this makes the round "empty" or fully processed, mark as settled
-                         if round_state.committed_count == round_state.settled_count {
-                             round_state.token_settled = true;
-                             round_state.token_settled_slot = current_slot;
-                         }
-                         
-                         // Write back updated round state
-                         drop(round_data); // Drop borrow before borrow_mut
-                         let mut round_data_mut = ctx.accounts.round.try_borrow_mut_data()?;
-                         let mut w = std::io::Cursor::new(&mut round_data_mut[..]);
-                         round_state.try_serialize(&mut w)?;
+                     if !is_processed && (is_refund_mode || is_finalized_status) {
+                          let mut changed = false;
+                          if round_state.committed_count > 0 {
+                              round_state.committed_count -= 1;
+                              changed = true;
+                          }
+                          if round_state.committed_count == round_state.settled_count && round_state.finalized {
+                              round_state.token_settled = true;
+                              round_state.token_settled_slot = current_slot;
+                              changed = true;
+                          }
+                          if changed {
+                              drop(round_data);
+                              let mut round_data_mut = ctx.accounts.round.try_borrow_mut_data()?;
+                              if data_len == 231 {
+                                  round_data_mut[165] = if round_state.swept { 1 } else { 0 }; 
+                              } else {
+                                  let mut w = std::io::Cursor::new(&mut round_data_mut[..]);
+                                  round_state.try_serialize(&mut w)?;
+                              }
+                          }
+                     }
                  }
              }
         }
 
         if is_processed || is_refund_mode || is_finalized_status {
             if ticket.win && !ticket.claimed && !is_refund_mode { 
-                // Winners must claim first (unless in refund mode or round is swept)
                 if !is_finalized_status {
-                    // If round is NOT finalized, it might still reach a refund mode
                     require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
                 } else {
-                    // Round IS finalized. Check if swept.
                     let round_data = ctx.accounts.round.try_borrow_data()?;
-                    let mut slice: &[u8] = &round_data;
-                    if let Ok(round_state) = Round::try_deserialize(&mut slice) {
-                        if !round_state.swept {
-                             require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
-                        }
+                    let swept = if round_data.len() == 231 {
+                        round_data[165] == 1
                     } else {
-                        // Could not deserialize, safer to require claim
-                        require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
+                        let mut slice: &[u8] = &round_data;
+                        Round::try_deserialize(&mut slice).map(|r| r.swept).unwrap_or(false)
+                    };
+                    if !swept {
+                         require!(ticket.claimed, TimlgError::WinnerMustClaimFirst);
                     }
                 }
             }
