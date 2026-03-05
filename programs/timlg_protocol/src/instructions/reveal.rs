@@ -25,6 +25,11 @@ fn inc_reveal_counters(round: &mut Round, did_win: bool) -> Result<()> {
             .win_count
             .checked_add(1)
             .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+            
+        round.win_revealed_count = round
+            .win_revealed_count
+            .checked_add(1)
+            .ok_or_else(|| error!(TimlgError::MathOverflow))?;
     }
     Ok(())
 }

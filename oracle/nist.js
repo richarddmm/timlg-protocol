@@ -17,6 +17,7 @@ async function fetchNistPulseBytes(chainIndex, pulseIndex) {
   });
 
   if (res.status === 404) {
+    console.error(`[nist] 404 at ${url}`);
     const err = new Error(`NIST pulse not found yet (404): chain=${chainIndex} pulse=${pulseIndex}`);
     err.code = "NIST_404";
     throw err;

@@ -113,11 +113,18 @@ pub struct Round {
     pub revealed_count: u64,
     pub win_count: u64,
 
+    // ===== Etapa 3 (economía lazy-settlement) =====
     // NEW: number of tickets processed by settlement (winners/losers/unrevealed)
     pub settled_count: u64,
 
     pub token_settled: bool,
     pub token_settled_slot: u64,
+
+    // Contadores para Lazy Settlement Deflacionario
+    pub win_revealed_count: u64,
+    pub claimed_win_count: u64,
+    pub close_burn_done: bool,
+    pub close_unclaimed_mint_done: bool,
 
 }
 

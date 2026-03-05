@@ -116,7 +116,56 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         )?;
     }
 
-    // 2) Token Sweep (Treasury SPL) — safe: no data borrow held
+    // 2) Token Sweep: Lazy Settlement (Burn, Mint, Transfer)
+    // A) Quemar el Stake de los Losers y Unreveals
+    if !round.close_burn_done {
+        let loss_or_unreveal = round.committed_count.saturating_sub(round.win_revealed_count);
+        let burn_amount = loss_or_unreveal.saturating_mul(cfg.stake_amount);
+        
+        if burn_amount > 0 {
+            let round_le = round_id.to_le_bytes();
+            let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
+            token::burn(
+                CpiContext::new_with_signer(
+                    ctx.accounts.token_program.to_account_info(),
+                    Burn {
+                        mint: ctx.accounts.timlg_mint.to_account_info(),
+                        from: ctx.accounts.timlg_vault.to_account_info(),
+                        authority: round_ai.clone(),
+                    },
+                    signer_seeds,
+                ),
+                burn_amount,
+            )?;
+        }
+        round.close_burn_done = true;
+    }
+
+    // B) Mintear la recompensa de los Winners que no hicieron Claim
+    if !round.close_unclaimed_mint_done {
+        let missing_claims = round.win_revealed_count.saturating_sub(round.claimed_win_count);
+        let mint_amount = missing_claims.saturating_mul(cfg.stake_amount);
+        
+        if mint_amount > 0 {
+            let cfg_seeds: &[&[&[u8]]] = &[&[crate::CONFIG_SEED, &[cfg.bump]]];
+            token::mint_to(
+                CpiContext::new_with_signer(
+                    ctx.accounts.token_program.to_account_info(),
+                    token::MintTo {
+                        mint: ctx.accounts.timlg_mint.to_account_info(),
+                        to: ctx.accounts.treasury.to_account_info(),
+                        authority: ctx.accounts.config.to_account_info(),
+                    },
+                    cfg_seeds,
+                ),
+                mint_amount,
+            )?;
+        }
+        round.close_unclaimed_mint_done = true;
+    }
+
+    // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
+    ctx.accounts.timlg_vault.reload()?;
     let vault_tokens = ctx.accounts.timlg_vault.amount;
     if vault_tokens > 0 {
         let round_le = round_id.to_le_bytes();

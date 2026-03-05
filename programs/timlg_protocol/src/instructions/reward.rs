@@ -40,15 +40,11 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     // Asentamos el ticket ganador si no estaba procesado previamente
     if !ticket.processed {
         ticket.processed = true;
-        round.settled_count = round
-            .settled_count
+        
+        round.claimed_win_count = round
+            .claimed_win_count
             .checked_add(1)
             .ok_or_else(|| error!(TimlgError::MathOverflow))?;
-        
-        if round.settled_count == round.committed_count {
-            round.token_settled = true;
-            round.token_settled_slot = current_slot;
-        }
     }
 
     // 1) refund stake: transfer stake_amount desde timlg_vault al user ATA
