@@ -771,7 +771,7 @@ pub struct SweepUnclaimed<'info> {
     )]
     pub treasury: Account<'info, TokenAccount>,
 
-    #[account(address = config.timlg_mint)]
+    #[account(mut, address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,
 
     #[account(mut)]

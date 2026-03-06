@@ -1798,7 +1798,7 @@
         {
           "name": "treasury_sol",
           "docs": [
-            "\u2705 NUEVO: Treasury SOL (lamports) como system-owned PDA (igual que vault)"
+            "✅ NUEVO: Treasury SOL (lamports) como system-owned PDA (igual que vault)"
           ],
           "writable": true,
           "pda": {
@@ -3131,6 +3131,86 @@
       ]
     },
     {
+      "name": "set_pulse_mock",
+      "discriminator": [
+        32,
+        132,
+        64,
+        81,
+        204,
+        96,
+        99,
+        168
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  51
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "round",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  117,
+                  110,
+                  100,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "round_id",
+          "type": "u64"
+        },
+        {
+          "name": "pulse",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "set_pulse_signed",
       "discriminator": [
         50,
@@ -3377,7 +3457,7 @@
         {
           "name": "treasury_sol",
           "docs": [
-            "\u2705 SOL destination"
+            "✅ SOL destination"
           ],
           "writable": true,
           "pda": {
@@ -3408,7 +3488,7 @@
         {
           "name": "timlg_vault",
           "docs": [
-            "\u2705 SPL vault per round"
+            "✅ SPL vault per round"
           ],
           "writable": true,
           "pda": {
@@ -3442,7 +3522,7 @@
         {
           "name": "treasury",
           "docs": [
-            "\u2705 SPL destination (from config)"
+            "✅ SPL destination (from config)"
           ],
           "writable": true,
           "pda": {
@@ -4642,6 +4722,22 @@
           {
             "name": "token_settled_slot",
             "type": "u64"
+          },
+          {
+            "name": "win_revealed_count",
+            "type": "u64"
+          },
+          {
+            "name": "claimed_win_count",
+            "type": "u64"
+          },
+          {
+            "name": "close_burn_done",
+            "type": "bool"
+          },
+          {
+            "name": "close_unclaimed_mint_done",
+            "type": "bool"
           }
         ]
       }
