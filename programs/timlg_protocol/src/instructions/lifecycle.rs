@@ -141,28 +141,9 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         round.close_burn_done = true;
     }
 
-    // B) Mintear la recompensa de los Winners que no hicieron Claim
-    if !round.close_unclaimed_mint_done {
-        let missing_claims = round.win_revealed_count.saturating_sub(round.claimed_win_count);
-        let mint_amount = missing_claims.saturating_mul(cfg.stake_amount);
-        
-        if mint_amount > 0 {
-            let cfg_seeds: &[&[&[u8]]] = &[&[crate::CONFIG_SEED, &[cfg.bump]]];
-            token::mint_to(
-                CpiContext::new_with_signer(
-                    ctx.accounts.token_program.to_account_info(),
-                    token::MintTo {
-                        mint: ctx.accounts.timlg_mint.to_account_info(),
-                        to: ctx.accounts.treasury.to_account_info(),
-                        authority: ctx.accounts.config.to_account_info(),
-                    },
-                    cfg_seeds,
-                ),
-                mint_amount,
-            )?;
-        }
-        round.close_unclaimed_mint_done = true;
-    }
+    // B) [MINTEO ELIMINADO] - Los ganadores que no reclamaron ya no mintean recompensa para la tesorería.
+    // Solo se queda el Stake en el vault para ser movido en el paso C.
+    round.close_unclaimed_mint_done = true;
 
     // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
     ctx.accounts.timlg_vault.reload()?;

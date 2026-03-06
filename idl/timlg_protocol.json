@@ -3131,86 +3131,6 @@
       ]
     },
     {
-      "name": "set_pulse_mock",
-      "discriminator": [
-        32,
-        132,
-        64,
-        81,
-        204,
-        96,
-        99,
-        168
-      ],
-      "accounts": [
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103,
-                  95,
-                  118,
-                  51
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "round",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  111,
-                  117,
-                  110,
-                  100,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "round_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "admin",
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "round_id",
-          "type": "u64"
-        },
-        {
-          "name": "pulse",
-          "type": {
-            "array": [
-              "u8",
-              64
-            ]
-          }
-        }
-      ]
-    },
-    {
       "name": "set_pulse_signed",
       "discriminator": [
         50,
@@ -3547,7 +3467,8 @@
           }
         },
         {
-          "name": "timlg_mint"
+          "name": "timlg_mint",
+          "writable": true
         },
         {
           "name": "admin",
