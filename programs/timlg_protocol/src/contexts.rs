@@ -740,16 +740,6 @@ pub struct SweepUnclaimed<'info> {
     #[account(mut)]
     pub vault: AccountInfo<'info>,
 
-    /// ✅ SOL destination
-    /// CHECK: System-owned PDA. Address enforced by seeds/bump + address=config.treasury_sol
-    #[account(
-        mut,
-        seeds = [crate::TREASURY_SOL_SEED],
-        bump = config.treasury_sol_bump,
-        address = config.treasury_sol
-    )]
-    /// CHECK: Treasury SOL PDA
-    pub treasury_sol: UncheckedAccount<'info>,
 
     /// ✅ SPL vault per round
     #[account(
