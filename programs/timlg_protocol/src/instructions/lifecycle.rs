@@ -176,14 +176,15 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
             .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
         if data_len == 231 {
             // Manual write-back for legacy to avoid size conflict
-            // Los offsets se mantienen igual (swept en 165, swept_slot en 166-174)
             data[165] = 1; // swept
             data[166..174].copy_from_slice(&current_slot.to_le_bytes());
         } else {
+            // Native serialization for modern accounts (deterministic offsets)
             let mut w = std::io::Cursor::new(&mut data[..]);
             round.try_serialize(&mut w)?;
         }
     }
+
 
     Ok(())
 }
