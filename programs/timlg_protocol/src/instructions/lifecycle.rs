@@ -116,11 +116,17 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         )?;
     }
 
-    // 2) Token Sweep: Lazy Settlement (Burn, Mint, Transfer)
-    // A) Quemar el Stake de los Losers y Unreveals
+    // B) Quemar el Stake de los Losers y Unreveals (Deflación Garantizada)
     if !round.close_burn_done {
-        let loss_or_unreveal = round.committed_count.saturating_sub(round.win_revealed_count);
-        let burn_amount = loss_or_unreveal.saturating_mul(cfg.stake_amount);
+        ctx.accounts.timlg_vault.reload()?;
+        let current_balance = ctx.accounts.timlg_vault.amount;
+        
+        // El stake que legalmente pertenece a los ganadores que aún no han reclamado
+        let unclaimed_winners = round.win_count.saturating_sub(round.claimed_win_count);
+        let winners_stake = unclaimed_winners.saturating_mul(cfg.stake_amount);
+        
+        // Todo lo que exceda el stake de los ganadores es RESIDUO (Losses + Unrevealed) y debe quemarse.
+        let burn_amount = current_balance.saturating_sub(winners_stake);
         
         if burn_amount > 0 {
             let round_le = round_id.to_le_bytes();
