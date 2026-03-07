@@ -129,6 +129,12 @@ pub fn create_round_auto(
     round.token_settled = false;
     round.token_settled_slot = 0;
 
+    // MVP-3.2: Lazy Settlement Deflationario
+    round.win_revealed_count = 0;
+    round.claimed_win_count = 0;
+    round.close_burn_done = false;
+    round.close_unclaimed_mint_done = false;
+
     rr.next_round_id = rr.next_round_id.checked_add(1).ok_or(TimlgError::MathOverflow)?;
 
     Ok(())
@@ -253,6 +259,12 @@ pub fn create_round(
     round.settled_count = 0;
     round.token_settled = false;
     round.token_settled_slot = 0;
+
+    // MVP-3.2: Lazy Settlement Deflationario
+    round.win_revealed_count = 0;
+    round.claimed_win_count = 0;
+    round.close_burn_done = false;
+    round.close_unclaimed_mint_done = false;
 
     Ok(())
 }
