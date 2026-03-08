@@ -3375,37 +3375,6 @@
           "writable": true
         },
         {
-          "name": "treasury_sol",
-          "docs": [
-            "✅ SOL destination"
-          ],
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121,
-                  95,
-                  115,
-                  111,
-                  108,
-                  95,
-                  118,
-                  51
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "timlg_vault",
           "docs": [
             "✅ SPL vault per round"
