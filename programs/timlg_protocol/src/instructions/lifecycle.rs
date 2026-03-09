@@ -125,17 +125,19 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     if is_token_account {
         // B) Quemar el Stake de los Losers y Unreveals (Deflación Garantizada)
         if !round.close_burn_done {
-            let data = ctx.accounts.timlg_vault.try_borrow_data()?;
-            let mut slice: &[u8] = &data;
-            let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
-            let current_balance = timlg_vault.amount;
-            
-            // El stake que legalmente pertenece a los ganadores que aún no han reclamado
-            let unclaimed_winners = round.win_count.saturating_sub(round.claimed_win_count);
-            let winners_stake = unclaimed_winners.saturating_mul(cfg.stake_amount);
-            
-            // Todo lo que exceda el stake de los ganadores es RESIDUO (Losses + Unrevealed) y debe quemarse.
-            let burn_amount = current_balance.saturating_sub(winners_stake);
+            let burn_amount = {
+                let data = ctx.accounts.timlg_vault.try_borrow_data()?;
+                let mut slice: &[u8] = &data;
+                let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
+                let current_balance = timlg_vault.amount;
+                
+                // El stake que legalmente pertenece a los ganadores que aún no han reclamado
+                let unclaimed_winners = round.win_count.saturating_sub(round.claimed_win_count);
+                let winners_stake = unclaimed_winners.saturating_mul(cfg.stake_amount);
+                
+                // Todo lo que exceda el stake de los ganadores es RESIDUO (Losses + Unrevealed) y debe quemarse.
+                current_balance.saturating_sub(winners_stake)
+            };
             
             if burn_amount > 0 {
                 let round_le = round_id.to_le_bytes();
@@ -160,10 +162,13 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         round.close_unclaimed_mint_done = true;
 
         // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
-        let data = ctx.accounts.timlg_vault.try_borrow_data()?;
-        let mut slice: &[u8] = &data;
-        let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
-        let vault_tokens = timlg_vault.amount;
+        let vault_tokens = {
+            let data = ctx.accounts.timlg_vault.try_borrow_data()?;
+            let mut slice: &[u8] = &data;
+            let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
+            timlg_vault.amount
+        };
+
         if vault_tokens > 0 {
             let round_le = round_id.to_le_bytes();
             let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
