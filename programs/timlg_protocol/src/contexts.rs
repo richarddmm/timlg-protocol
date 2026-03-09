@@ -748,15 +748,13 @@ pub struct SweepUnclaimed<'info> {
     pub vault: AccountInfo<'info>,
 
 
-    /// ✅ SPL vault per round
+    /// CHECK: PDA verification in instruction logic. Can be a SystemAccount for legacy rounds.
     #[account(
         mut,
         seeds = [crate::TIMLG_VAULT_SEED, round_id.to_le_bytes().as_ref()],
-        bump,
-        token::mint = timlg_mint,
-        token::authority = round
+        bump
     )]
-    pub timlg_vault: Account<'info, TokenAccount>,
+    pub timlg_vault: AccountInfo<'info>,
 
     /// ✅ SPL destination (from config)
     #[account(
@@ -1188,16 +1186,13 @@ pub struct CloseRound<'info> {
     #[account(mut)]
     pub round: AccountInfo<'info>,
 
-    // SPL Token Vault (TIMLG)
-    // Must be empty before closing. Burn/Sweep should have cleared it.
+    /// CHECK: PDA verification in instruction logic. Can be a SystemAccount for legacy rounds.
     #[account(
         mut,
         seeds = [crate::TIMLG_VAULT_SEED, round_id.to_le_bytes().as_ref()],
-        bump,
-        token::mint = timlg_mint,
-        token::authority = round
+        bump
     )]
-    pub timlg_vault: Account<'info, TokenAccount>,
+    pub timlg_vault: AccountInfo<'info>,
 
     #[account(address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,

@@ -116,60 +116,71 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         )?;
     }
 
-    // B) Quemar el Stake de los Losers y Unreveals (Deflación Garantizada)
-    if !round.close_burn_done {
-        ctx.accounts.timlg_vault.reload()?;
-        let current_balance = ctx.accounts.timlg_vault.amount;
-        
-        // El stake que legalmente pertenece a los ganadores que aún no han reclamado
-        let unclaimed_winners = round.win_count.saturating_sub(round.claimed_win_count);
-        let winners_stake = unclaimed_winners.saturating_mul(cfg.stake_amount);
-        
-        // Todo lo que exceda el stake de los ganadores es RESIDUO (Losses + Unrevealed) y debe quemarse.
-        let burn_amount = current_balance.saturating_sub(winners_stake);
-        
-        if burn_amount > 0 {
+    // --- Token Sweep Logic ---
+    // We attempt to deserialize timlg_vault as a TokenAccount. 
+    // If it is a SystemAccount (legacy), we skip token logic but still mark round as swept.
+    let timlg_vault_info = ctx.accounts.timlg_vault.to_account_info();
+    let is_token_account = *timlg_vault_info.owner == ctx.accounts.token_program.key() && timlg_vault_info.data_len() == 165;
+
+    if is_token_account {
+        // B) Quemar el Stake de los Losers y Unreveals (Deflación Garantizada)
+        if !round.close_burn_done {
+            let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+            let current_balance = timlg_vault.amount;
+            
+            // El stake que legalmente pertenece a los ganadores que aún no han reclamado
+            let unclaimed_winners = round.win_count.saturating_sub(round.claimed_win_count);
+            let winners_stake = unclaimed_winners.saturating_mul(cfg.stake_amount);
+            
+            // Todo lo que exceda el stake de los ganadores es RESIDUO (Losses + Unrevealed) y debe quemarse.
+            let burn_amount = current_balance.saturating_sub(winners_stake);
+            
+            if burn_amount > 0 {
+                let round_le = round_id.to_le_bytes();
+                let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
+                token::burn(
+                    CpiContext::new_with_signer(
+                        ctx.accounts.token_program.to_account_info(),
+                        Burn {
+                            mint: ctx.accounts.timlg_mint.to_account_info(),
+                            from: timlg_vault_info.clone(),
+                            authority: round_ai.clone(),
+                        },
+                        signer_seeds,
+                    ),
+                    burn_amount,
+                )?;
+            }
+            round.close_burn_done = true;
+        }
+
+        // B) [MINTEO ELIMINADO]
+        round.close_unclaimed_mint_done = true;
+
+        // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
+        let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+        let vault_tokens = timlg_vault.amount;
+        if vault_tokens > 0 {
             let round_le = round_id.to_le_bytes();
             let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
-            token::burn(
+
+            token::transfer(
                 CpiContext::new_with_signer(
                     ctx.accounts.token_program.to_account_info(),
-                    Burn {
-                        mint: ctx.accounts.timlg_mint.to_account_info(),
-                        from: ctx.accounts.timlg_vault.to_account_info(),
+                    Transfer {
+                        from: timlg_vault_info.clone(),
+                        to: ctx.accounts.treasury.to_account_info(),
                         authority: round_ai.clone(),
                     },
                     signer_seeds,
                 ),
-                burn_amount,
+                vault_tokens,
             )?;
         }
+    } else {
+        msg!("Legacy Round: timlg_vault is not a TokenAccount. Skipping token sweep.");
         round.close_burn_done = true;
-    }
-
-    // B) [MINTEO ELIMINADO] - Los ganadores que no reclamaron ya no mintean recompensa para la tesorería.
-    // Solo se queda el Stake en el vault para ser movido en el paso C.
-    round.close_unclaimed_mint_done = true;
-
-    // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
-    ctx.accounts.timlg_vault.reload()?;
-    let vault_tokens = ctx.accounts.timlg_vault.amount;
-    if vault_tokens > 0 {
-        let round_le = round_id.to_le_bytes();
-        let signer_seeds: &[&[&[u8]]] = &[&[ROUND_SEED, &round_le, &[round.bump]]];
-
-        token::transfer(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.timlg_vault.to_account_info(),
-                    to: ctx.accounts.treasury.to_account_info(),
-                    authority: round_ai.clone(),
-                },
-                signer_seeds,
-            ),
-            vault_tokens,
-        )?;
+        round.close_unclaimed_mint_done = true;
     }
 
     // ✅ mark swept + write back (new borrow scope after CPIs)
@@ -359,41 +370,48 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
             require!(round.finalized, TimlgError::NotFinalized);
         }
         // If no tickets were committed, token_settled might be false, which is fine.
-        let vault_is_empty = ctx.accounts.timlg_vault.amount == 0;
-        require!(
-            round.token_settled || round.committed_count == 0 || vault_is_empty,
-            TimlgError::RoundTokensNotSettled
-        );
+        let timlg_vault_info = ctx.accounts.timlg_vault.to_account_info();
+        let is_token_account = *timlg_vault_info.owner == ctx.accounts.token_program.key() && timlg_vault_info.data_len() == 165;
+
+        if is_token_account {
+             let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+             require!(
+                round.token_settled || round.committed_count == 0 || timlg_vault.amount == 0,
+                TimlgError::RoundTokensNotSettled
+             );
+             require!(timlg_vault.amount == 0, TimlgError::VaultNotEmpty);
+        }
+
         require!(round.swept, TimlgError::NotSwept);
-
-        // Also check that timlg_vault is empty (amount == 0)
-        require!(ctx.accounts.timlg_vault.amount == 0, TimlgError::VaultNotEmpty);
-
         (round.round_id, round.bump)
     };
 
-    // Close the Token Account via CPI
-    // The round PDA is the authority.
-    let round_id_bytes = round_id_val.to_le_bytes();
-    let bump = bump_val;
-    let seeds = &[
-        crate::ROUND_SEED,
-        round_id_bytes.as_ref(),
-        &[bump],
-    ];
-    let signer = &[&seeds[..]];
+    // Close the Token Account via CPI (only if it is a TokenAccount)
+    let timlg_vault_info = ctx.accounts.timlg_vault.to_account_info();
+    let is_token_account = *timlg_vault_info.owner == ctx.accounts.token_program.key() && timlg_vault_info.data_len() == 165;
 
-    let cpi_accounts = token::CloseAccount {
-        account: ctx.accounts.timlg_vault.to_account_info(),
-        destination: ctx.accounts.admin.to_account_info(),
-        authority: round_ai.clone(),
-    };
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.token_program.to_account_info(),
-        cpi_accounts,
-        signer,
-    );
-    token::close_account(cpi_ctx)?;
+    if is_token_account {
+        let round_id_bytes = round_id_val.to_le_bytes();
+        let bump = bump_val;
+        let seeds = &[
+            crate::ROUND_SEED,
+            round_id_bytes.as_ref(),
+            &[bump],
+        ];
+        let signer = &[&seeds[..]];
+
+        let cpi_accounts = token::CloseAccount {
+            account: timlg_vault_info.clone(),
+            destination: ctx.accounts.admin.to_account_info(),
+            authority: round_ai.clone(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            cpi_accounts,
+            signer,
+        );
+        token::close_account(cpi_ctx)?;
+    }
 
     // ✅ Manual Close of the Round PDA: transfer lamports and zero data
     let dest_ai = ctx.accounts.admin.to_account_info();
