@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{program::invoke_signed, system_instruction};
 
-use anchor_spl::token::{self, Burn, Transfer};
+use anchor_spl::token::{self, Burn, Transfer, TokenAccount};
 use crate::state::{Ticket, Round};
 use crate::constants::*;
 use crate::{SettleRoundTokens, TICKET_SEED, ROUND_SEED};
