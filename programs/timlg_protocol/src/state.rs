@@ -160,6 +160,25 @@ pub struct Ticket {
 
     pub created_slot: u64,
     pub revealed_slot: u64,
+
+    // NEW: chronoligcal counter of user's played tickets
+    pub user_commit_index: u64,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct UserStats {
+    pub user: Pubkey,
+    pub bump: u8,
+    pub games_played: u64,
+    pub games_won: u64,
+    pub games_lost: u64,
+    pub tickets_revealed: u64,
+    pub tickets_swept: u64,
+    pub tickets_claimed: u64,
+    pub current_streak: u64,
+    pub longest_streak: u64,
+    pub last_revealed_winning_index: u64,
 }
 
 #[account]

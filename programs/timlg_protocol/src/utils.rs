@@ -35,6 +35,8 @@ pub const MAX_BATCH: usize = 16;
 pub const USER_ESCROW_SEED: &[u8] = b"user_escrow_v3";
 pub const USER_ESCROW_VAULT_SEED: &[u8] = b"user_escrow_vault_v3";
 
+pub const USER_STATS_SEED: &[u8] = b"user_stats_v3";
+
 // OracleSet
 pub const ORACLE_SET_SEED: &[u8] = b"oracle_set_v3";
 pub const MAX_ORACLES: usize = 16;

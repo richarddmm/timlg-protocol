@@ -480,6 +480,7 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
     // 2. Validate Round & Ticket
     let ticket = &ctx.accounts.ticket;
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
+    let user_stats = &mut ctx.accounts.user_stats;
 
     // 3. Logic: When can you close (recover rent)?
     //    Ideally, when the ticket is fully "done" (processed).
@@ -564,6 +565,11 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
             // OK to close
         } else {
             return Err(error!(TimlgError::TicketNotProcessed));
+        }
+        
+        // Count as swept if ticket wasn't revealed, and it wasn't a refund mode (user willingly skipped it)
+        if !ticket.revealed && !is_refund_mode {
+            user_stats.tickets_swept = user_stats.tickets_swept.saturating_add(1);
         }
     } else {
         // If round is dead (deleted/archived), allow closing any ticket to reclaim rent.

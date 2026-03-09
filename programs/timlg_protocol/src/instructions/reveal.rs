@@ -8,10 +8,34 @@ use crate::{
     state::{Round, Ticket},
     utils::{
         assert_ed25519_ix_matches, expected_reveal_msg, reveal_core, RevealEntry, RevealSignedEntry,
-        MAX_BATCH, TICKET_SEED,
-    },
     RevealBatch, RevealBatchSigned, RevealTicket,
 };
+
+pub fn update_streak(user_stats: &mut crate::state::UserStats, ticket: &Ticket) {
+    user_stats.tickets_revealed = user_stats.tickets_revealed.saturating_add(1);
+
+    if ticket.win {
+        user_stats.games_won = user_stats.games_won.saturating_add(1);
+        
+        if user_stats.current_streak == 0 {
+            user_stats.current_streak = 1;
+        } else if ticket.user_commit_index == user_stats.last_revealed_winning_index.saturating_add(1) {
+            user_stats.current_streak = user_stats.current_streak.saturating_add(1);
+        } else {
+            // Se rompe la racha si el ticket anterior no fue revelado o no fue ganador
+            user_stats.current_streak = 1;
+        }
+        
+        if user_stats.current_streak > user_stats.longest_streak {
+            user_stats.longest_streak = user_stats.current_streak;
+        }
+        
+        user_stats.last_revealed_winning_index = ticket.user_commit_index;
+    } else {
+        user_stats.games_lost = user_stats.games_lost.saturating_add(1);
+        user_stats.current_streak = 0; // Se rompe la racha por pérdida
+    }
+}
 
 #[inline(always)]
 fn inc_reveal_counters(round: &mut Round, did_win: bool) -> Result<()> {
@@ -70,6 +94,7 @@ pub fn reveal_ticket(
 
     // ✅ counters (solo 1 vez: ya garantizamos !ticket.revealed arriba)
     inc_reveal_counters(round, ticket.win)?;
+    update_streak(&mut ctx.accounts.user_stats, ticket);
 
     Ok(())
 }
@@ -137,6 +162,7 @@ pub fn reveal_batch<'info>(
 
         // ✅ counters por ticket revelado
         inc_reveal_counters(round, ticket.win)?;
+        update_streak(&mut ctx.accounts.user_stats, &ticket);
 
         // persist ticket
         let mut data_mut = ticket_ai
@@ -233,6 +259,7 @@ pub fn reveal_batch_signed<'info>(
         )?;
 
         inc_reveal_counters(round, ticket.win)?;
+        update_streak(&mut ctx.accounts.user_stats, &ticket);
 
         let mut w = std::io::Cursor::new(&mut data[..]);
         ticket

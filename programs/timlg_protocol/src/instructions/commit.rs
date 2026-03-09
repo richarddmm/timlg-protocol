@@ -61,6 +61,15 @@ pub fn commit_ticket(
         )?;
     }
 
+    // --- UserStats ---
+    let user_stats = &mut ctx.accounts.user_stats;
+    user_stats.user = ctx.accounts.user.key();
+    user_stats.bump = ctx.bumps.user_stats;
+    
+    // Asignamos índice a este ticket
+    let user_commit_index = user_stats.games_played.checked_add(1).ok_or(TimlgError::MathOverflow)?;
+    user_stats.games_played = user_commit_index;
+
     // --- ticket ---
     let user_pk = ctx.accounts.user.key();
     let ticket = &mut ctx.accounts.ticket;
@@ -86,6 +95,8 @@ pub fn commit_ticket(
 
     ticket.created_slot = current_slot;
     ticket.revealed_slot = 0;
+
+    ticket.user_commit_index = user_commit_index;
 
     // counters
     round.committed_count = round
@@ -153,6 +164,11 @@ pub fn commit_batch<'info>(
             ],
         )?;
     }
+
+    // --- UserStats ---
+    let user_stats = &mut ctx.accounts.user_stats;
+    user_stats.user = ctx.accounts.user.key();
+    user_stats.bump = ctx.bumps.user_stats;
 
     // --- crear tickets (PDA accounts) ---
     let user_pk = ctx.accounts.user.key();
@@ -225,7 +241,11 @@ pub fn commit_batch<'info>(
             claimed_slot: 0,
             created_slot: current_slot,
             revealed_slot: 0,
+            user_commit_index: 0, // se actualiza abajo
         };
+
+        user_stats.games_played = user_stats.games_played.checked_add(1).ok_or(TimlgError::MathOverflow)?;
+        ticket.user_commit_index = user_stats.games_played;
 
         let mut w = std::io::Cursor::new(&mut data[..]);
         ticket
@@ -348,6 +368,11 @@ pub fn commit_batch_signed<'info>(
         )?;
     }
 
+    // --- UserStats ---
+    let user_stats = &mut ctx.accounts.user_stats;
+    user_stats.user = user_pk;
+    user_stats.bump = ctx.bumps.user_stats;
+
     // --- create ticket PDA accounts (payer = relayer/payer) ---
     let payer_pk = ctx.accounts.payer.key();
     let space = 8 + Ticket::INIT_SPACE;
@@ -416,7 +441,11 @@ pub fn commit_batch_signed<'info>(
             claimed_slot: 0,
             created_slot: current_slot,
             revealed_slot: 0,
+            user_commit_index: 0, // se actualiza abajo
         };
+
+        user_stats.games_played = user_stats.games_played.checked_add(1).ok_or(TimlgError::MathOverflow)?;
+        ticket.user_commit_index = user_stats.games_played;
 
         let mut w = std::io::Cursor::new(&mut data[..]);
         ticket

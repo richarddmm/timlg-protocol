@@ -1,24 +1,412 @@
 {
+  "accounts": [
+    {
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ],
+      "name": "Config"
+    },
+    {
+      "discriminator": [
+        128,
+        26,
+        73,
+        134,
+        218,
+        90,
+        126,
+        42
+      ],
+      "name": "OracleSet"
+    },
+    {
+      "discriminator": [
+        87,
+        127,
+        165,
+        51,
+        73,
+        78,
+        116,
+        174
+      ],
+      "name": "Round"
+    },
+    {
+      "discriminator": [
+        89,
+        3,
+        13,
+        175,
+        73,
+        80,
+        211,
+        206
+      ],
+      "name": "RoundRegistry"
+    },
+    {
+      "discriminator": [
+        41,
+        228,
+        24,
+        165,
+        78,
+        90,
+        235,
+        200
+      ],
+      "name": "Ticket"
+    },
+    {
+      "discriminator": [
+        252,
+        176,
+        228,
+        183,
+        130,
+        36,
+        15,
+        194
+      ],
+      "name": "Tokenomics"
+    },
+    {
+      "discriminator": [
+        242,
+        233,
+        85,
+        38,
+        26,
+        5,
+        142,
+        109
+      ],
+      "name": "UserEscrow"
+    }
+  ],
   "address": "GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP",
-  "metadata": {
-    "name": "timlg_protocol",
-    "version": "0.1.0",
-    "spec": "0.1.0",
-    "description": "Created with Anchor"
-  },
+  "errors": [
+    {
+      "code": 6000,
+      "msg": "Unauthorized",
+      "name": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "msg": "Protocol paused",
+      "name": "Paused"
+    },
+    {
+      "code": 6002,
+      "msg": "Invalid deadlines",
+      "name": "InvalidDeadlines"
+    },
+    {
+      "code": 6003,
+      "msg": "Commit window closed",
+      "name": "CommitClosed"
+    },
+    {
+      "code": 6004,
+      "msg": "Reveal window closed",
+      "name": "RevealClosed"
+    },
+    {
+      "code": 6005,
+      "msg": "Pulse not set",
+      "name": "PulseNotSet"
+    },
+    {
+      "code": 6006,
+      "msg": "Round pulse already set",
+      "name": "PulseAlreadySet"
+    },
+    {
+      "code": 6007,
+      "msg": "Round already finalized",
+      "name": "AlreadyFinalized"
+    },
+    {
+      "code": 6008,
+      "msg": "Round not finalized",
+      "name": "NotFinalized"
+    },
+    {
+      "code": 6009,
+      "msg": "Cannot finalize yet",
+      "name": "CannotFinalizeYet"
+    },
+    {
+      "code": 6010,
+      "msg": "Already revealed",
+      "name": "AlreadyRevealed"
+    },
+    {
+      "code": 6011,
+      "msg": "Commitment mismatch",
+      "name": "CommitmentMismatch"
+    },
+    {
+      "code": 6012,
+      "msg": "Invalid guess (must be 0/1)",
+      "name": "InvalidGuess"
+    },
+    {
+      "code": 6013,
+      "msg": "Too many entries",
+      "name": "TooManyEntries"
+    },
+    {
+      "code": 6014,
+      "msg": "Ticket PDA mismatch",
+      "name": "TicketPdaMismatch"
+    },
+    {
+      "code": 6015,
+      "msg": "Ticket already exists",
+      "name": "TicketAlreadyExists"
+    },
+    {
+      "code": 6016,
+      "msg": "Ticket not owned by program",
+      "name": "TicketNotOwnedByProgram"
+    },
+    {
+      "code": 6017,
+      "msg": "Vault PDA mismatch",
+      "name": "VaultPdaMismatch"
+    },
+    {
+      "code": 6018,
+      "msg": "Insufficient vault funds",
+      "name": "InsufficientVaultFunds"
+    },
+    {
+      "code": 6019,
+      "msg": "Missing or invalid ed25519 verify instruction",
+      "name": "MissingOrInvalidEd25519Ix"
+    },
+    {
+      "code": 6020,
+      "msg": "Ed25519 pubkey mismatch",
+      "name": "Ed25519PubkeyMismatch"
+    },
+    {
+      "code": 6021,
+      "msg": "Ed25519 message mismatch",
+      "name": "Ed25519MessageMismatch"
+    },
+    {
+      "code": 6022,
+      "msg": "Oracle pubkey not set",
+      "name": "OracleNotSet"
+    },
+    {
+      "code": 6023,
+      "msg": "Bit index mismatch",
+      "name": "BitIndexMismatch"
+    },
+    {
+      "code": 6024,
+      "msg": "Failed to borrow account data",
+      "name": "AccountBorrowFailed"
+    },
+    {
+      "code": 6025,
+      "msg": "Round is finalized",
+      "name": "RoundFinalized"
+    },
+    {
+      "code": 6026,
+      "msg": "Commit not allowed after pulse is set",
+      "name": "CommitAfterPulseSet"
+    },
+    {
+      "code": 6027,
+      "msg": "Sweep not allowed yet (grace period not elapsed)",
+      "name": "SweepTooEarly"
+    },
+    {
+      "code": 6028,
+      "msg": "Vault already swept for this round",
+      "name": "AlreadySwept"
+    },
+    {
+      "code": 6029,
+      "msg": "Cannot claim after vault sweep",
+      "name": "ClaimAfterSweep"
+    },
+    {
+      "code": 6030,
+      "msg": "Invalid stake amount",
+      "name": "InvalidStakeAmount"
+    },
+    {
+      "code": 6031,
+      "msg": "Invalid window",
+      "name": "InvalidWindow"
+    },
+    {
+      "code": 6032,
+      "msg": "Missing bump",
+      "name": "MissingBump"
+    },
+    {
+      "code": 6033,
+      "msg": "Math overflow",
+      "name": "MathOverflow"
+    },
+    {
+      "code": 6034,
+      "msg": "timlg_mint does not match config",
+      "name": "TIMLGMintMismatch"
+    },
+    {
+      "code": 6035,
+      "msg": "Invalid user TIMLG token account",
+      "name": "InvalidUserTIMLGAta"
+    },
+    {
+      "code": 6036,
+      "msg": "Ticket not revealed",
+      "name": "TicketNotRevealed"
+    },
+    {
+      "code": 6037,
+      "msg": "Not a winner",
+      "name": "NotWinner"
+    },
+    {
+      "code": 6038,
+      "msg": "Already claimed",
+      "name": "AlreadyClaimed"
+    },
+    {
+      "code": 6039,
+      "msg": "Stake not paid for this ticket",
+      "name": "StakeNotPaid"
+    },
+    {
+      "code": 6040,
+      "msg": "Insufficient escrow funds",
+      "name": "InsufficientEscrow"
+    },
+    {
+      "code": 6041,
+      "msg": "Signed batch contains mixed users",
+      "name": "SignedBatchMixedUsers"
+    },
+    {
+      "code": 6042,
+      "msg": "Round tokens not settled yet",
+      "name": "RoundNotSettled"
+    },
+    {
+      "code": 6043,
+      "msg": "Too early to settle round tokens",
+      "name": "SettleTooEarly"
+    },
+    {
+      "code": 6044,
+      "msg": "Round tokens already settled",
+      "name": "RoundTokensAlreadySettled"
+    },
+    {
+      "code": 6045,
+      "msg": "OracleSet is full",
+      "name": "OracleSetFull"
+    },
+    {
+      "code": 6046,
+      "msg": "Oracle already exists in allowlist",
+      "name": "OracleAlreadyExists"
+    },
+    {
+      "code": 6047,
+      "msg": "Oracle not found in allowlist",
+      "name": "OracleNotFound"
+    },
+    {
+      "code": 6048,
+      "msg": "Invalid threshold",
+      "name": "InvalidThreshold"
+    },
+    {
+      "code": 6049,
+      "msg": "Threshold exceeds current oracle count",
+      "name": "ThresholdExceedsOracleCount"
+    },
+    {
+      "code": 6050,
+      "msg": "Invalid fee bps (must be 0..=10_000).",
+      "name": "InvalidFeeBps"
+    },
+    {
+      "code": 6051,
+      "msg": "Invalid basis points (must be <= 10000)",
+      "name": "InvalidBps"
+    },
+    {
+      "code": 12052,
+      "msg": "Refund too early",
+      "name": "RefundTooEarly"
+    },
+    {
+      "code": 12053,
+      "msg": "Vault not empty",
+      "name": "VaultNotEmpty"
+    },
+    {
+      "code": 12054,
+      "msg": "Reveal window too short",
+      "name": "RevealWindowTooShort"
+    },
+    {
+      "code": 12055,
+      "msg": "Tokenomics not initialized",
+      "name": "TokenomicsNotInitialized"
+    },
+    {
+      "code": 12056,
+      "msg": "Round not swept",
+      "name": "NotSwept"
+    },
+    {
+      "code": 12057,
+      "msg": "Round tokens not settled",
+      "name": "RoundTokensNotSettled"
+    },
+    {
+      "code": 12058,
+      "msg": "Ticket already processed",
+      "name": "TicketAlreadyProcessed"
+    },
+    {
+      "code": 12059,
+      "msg": "Ticket not processed yet",
+      "name": "TicketNotProcessed"
+    },
+    {
+      "code": 12060,
+      "msg": "Winner must claim reward first",
+      "name": "WinnerMustClaimFirst"
+    },
+    {
+      "code": 12061,
+      "msg": "Pulse too late (liveness hazard)",
+      "name": "PulseTooLate"
+    }
+  ],
   "instructions": [
     {
-      "name": "add_oracle",
-      "discriminator": [
-        185,
-        165,
-        165,
-        167,
-        208,
-        207,
-        55,
-        35
-      ],
       "accounts": [
         {
           "name": "config",
@@ -43,7 +431,6 @@
         },
         {
           "name": "oracle_set",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -69,7 +456,8 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -81,24 +469,23 @@
           "name": "oracle",
           "type": "pubkey"
         }
-      ]
+      ],
+      "discriminator": [
+        185,
+        165,
+        165,
+        167,
+        208,
+        207,
+        55,
+        35
+      ],
+      "name": "add_oracle"
     },
     {
-      "name": "claim_reward",
-      "discriminator": [
-        149,
-        95,
-        181,
-        242,
-        94,
-        90,
-        158,
-        162
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -116,7 +503,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "tokenomics",
@@ -149,7 +537,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -170,11 +557,11 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "ticket",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -204,15 +591,16 @@
                 "path": "nonce"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true,
           "relations": [
             "ticket"
-          ]
+          ],
+          "signer": true,
+          "writable": true
         },
         {
           "name": "timlg_mint",
@@ -231,8 +619,8 @@
           "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         }
       ],
       "args": [
@@ -244,24 +632,23 @@
           "name": "nonce",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        149,
+        95,
+        181,
+        242,
+        94,
+        90,
+        158,
+        162
+      ],
+      "name": "claim_reward"
     },
     {
-      "name": "close_config",
-      "discriminator": [
-        145,
-        9,
-        72,
-        157,
-        95,
-        125,
-        61,
-        85
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -279,28 +666,29 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         }
       ],
-      "args": []
+      "args": [],
+      "discriminator": [
+        145,
+        9,
+        72,
+        157,
+        95,
+        125,
+        61,
+        85
+      ],
+      "name": "close_config"
     },
     {
-      "name": "close_round",
-      "discriminator": [
-        149,
-        14,
-        81,
-        88,
-        230,
-        226,
-        234,
-        37
-      ],
       "accounts": [
         {
           "name": "config",
@@ -329,7 +717,6 @@
         },
         {
           "name": "timlg_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -356,23 +743,24 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -380,20 +768,20 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        149,
+        14,
+        81,
+        88,
+        230,
+        226,
+        234,
+        37
+      ],
+      "name": "close_round"
     },
     {
-      "name": "close_ticket",
-      "discriminator": [
-        66,
-        209,
-        114,
-        197,
-        75,
-        27,
-        182,
-        117
-      ],
       "accounts": [
         {
           "name": "config",
@@ -417,15 +805,14 @@
           }
         },
         {
-          "name": "round",
           "docs": [
             "Address verification is secondary as Ticket PDA already enforces the round_id."
           ],
+          "name": "round",
           "writable": true
         },
         {
           "name": "ticket",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -455,19 +842,20 @@
                 "path": "nonce"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true,
           "relations": [
             "ticket"
-          ]
+          ],
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -479,24 +867,23 @@
           "name": "nonce",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        66,
+        209,
+        114,
+        197,
+        75,
+        27,
+        182,
+        117
+      ],
+      "name": "close_ticket"
     },
     {
-      "name": "commit_batch",
-      "discriminator": [
-        27,
-        234,
-        100,
-        224,
-        134,
-        31,
-        168,
-        142
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -514,11 +901,11 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -539,7 +926,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
@@ -550,8 +938,8 @@
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_timlg_ata",
@@ -559,7 +947,6 @@
         },
         {
           "name": "treasury_sol",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -583,15 +970,16 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -609,24 +997,23 @@
             }
           }
         }
-      ]
+      ],
+      "discriminator": [
+        27,
+        234,
+        100,
+        224,
+        134,
+        31,
+        168,
+        142
+      ],
+      "name": "commit_batch"
     },
     {
-      "name": "commit_batch_signed",
-      "discriminator": [
-        114,
-        249,
-        180,
-        103,
-        248,
-        14,
-        43,
-        173
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -644,11 +1031,11 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -669,7 +1056,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
@@ -679,16 +1067,15 @@
           "writable": true
         },
         {
-          "name": "payer",
           "docs": [
             "Relayer (paga fees)"
           ],
-          "writable": true,
-          "signer": true
+          "name": "payer",
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_escrow",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -715,11 +1102,11 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user_escrow_ata",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -752,7 +1139,8 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user"
@@ -762,7 +1150,6 @@
         },
         {
           "name": "treasury_sol",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -786,15 +1173,16 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -812,24 +1200,23 @@
             }
           }
         }
-      ]
+      ],
+      "discriminator": [
+        114,
+        249,
+        180,
+        103,
+        248,
+        14,
+        43,
+        173
+      ],
+      "name": "commit_batch_signed"
     },
     {
-      "name": "commit_ticket",
-      "discriminator": [
-        15,
-        97,
-        55,
-        56,
-        38,
-        249,
-        88,
-        220
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -847,11 +1234,11 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -872,7 +1259,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
@@ -883,7 +1271,6 @@
         },
         {
           "name": "ticket",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -913,12 +1300,13 @@
                 "path": "nonce"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_timlg_ata",
@@ -926,7 +1314,6 @@
         },
         {
           "name": "treasury_sol",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -950,15 +1337,16 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -979,20 +1367,20 @@
             ]
           }
         }
-      ]
+      ],
+      "discriminator": [
+        15,
+        97,
+        55,
+        56,
+        38,
+        249,
+        88,
+        220
+      ],
+      "name": "commit_ticket"
     },
     {
-      "name": "create_round",
-      "discriminator": [
-        229,
-        218,
-        236,
-        169,
-        231,
-        80,
-        134,
-        112
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1020,7 +1408,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1041,11 +1428,11 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1066,11 +1453,11 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1097,24 +1484,25 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -1134,24 +1522,23 @@
           "name": "reveal_deadline_slot",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        229,
+        218,
+        236,
+        169,
+        231,
+        80,
+        134,
+        112
+      ],
+      "name": "create_round"
     },
     {
-      "name": "create_round_auto",
-      "discriminator": [
-        203,
-        214,
-        64,
-        8,
-        185,
-        82,
-        116,
-        71
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1169,14 +1556,14 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
         },
         {
           "name": "round_registry",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1206,11 +1593,11 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1227,16 +1614,16 @@
                 ]
               },
               {
+                "account": "RoundRegistry",
                 "kind": "account",
-                "path": "round_registry.next_round_id",
-                "account": "RoundRegistry"
+                "path": "round_registry.next_round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1253,16 +1640,16 @@
                 ]
               },
               {
+                "account": "RoundRegistry",
                 "kind": "account",
-                "path": "round_registry.next_round_id",
-                "account": "RoundRegistry"
+                "path": "round_registry.next_round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1285,29 +1672,30 @@
                 ]
               },
               {
+                "account": "RoundRegistry",
                 "kind": "account",
-                "path": "round_registry.next_round_id",
-                "account": "RoundRegistry"
+                "path": "round_registry.next_round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -1323,20 +1711,20 @@
           "name": "reveal_deadline_slot",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        203,
+        214,
+        64,
+        8,
+        185,
+        82,
+        116,
+        71
+      ],
+      "name": "create_round_auto"
     },
     {
-      "name": "deposit_escrow",
-      "discriminator": [
-        226,
-        112,
-        158,
-        176,
-        178,
-        118,
-        153,
-        128
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1365,7 +1753,6 @@
         },
         {
           "name": "user_escrow",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1392,11 +1779,11 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user_escrow_ata",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1429,20 +1816,21 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_timlg_ata",
           "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         }
       ],
       "args": [
@@ -1450,20 +1838,20 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        226,
+        112,
+        158,
+        176,
+        178,
+        118,
+        153,
+        128
+      ],
+      "name": "deposit_escrow"
     },
     {
-      "name": "finalize_round",
-      "discriminator": [
-        239,
-        160,
-        254,
-        11,
-        254,
-        144,
-        53,
-        148
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1488,7 +1876,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1509,7 +1896,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -1521,20 +1909,20 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        239,
+        160,
+        254,
+        11,
+        254,
+        144,
+        53,
+        148
+      ],
+      "name": "finalize_round"
     },
     {
-      "name": "fund_vault",
-      "discriminator": [
-        26,
-        33,
-        207,
-        242,
-        119,
-        108,
-        134,
-        73
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1583,7 +1971,6 @@
         },
         {
           "name": "vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1604,16 +1991,17 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "funder",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -1625,20 +2013,20 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        26,
+        33,
+        207,
+        242,
+        119,
+        108,
+        134,
+        73
+      ],
+      "name": "fund_vault"
     },
     {
-      "name": "init_user_escrow",
-      "discriminator": [
-        122,
-        51,
-        129,
-        53,
-        23,
-        2,
-        205,
-        146
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1667,7 +2055,6 @@
         },
         {
           "name": "user_escrow",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1694,11 +2081,11 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user_escrow_ata",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1731,44 +2118,44 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
-      "args": []
+      "args": [],
+      "discriminator": [
+        122,
+        51,
+        129,
+        53,
+        23,
+        2,
+        205,
+        146
+      ],
+      "name": "init_user_escrow"
     },
     {
-      "name": "initialize_config",
-      "discriminator": [
-        208,
-        127,
-        21,
-        1,
-        194,
-        190,
-        196,
-        70
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1786,21 +2173,21 @@
                 ]
               }
             ]
-          }
-        },
-        {
-          "name": "timlg_mint",
-          "docs": [
-            "Mint SPL del token TIMLG (ya creado off-chain en tests o en deploy script)"
-          ],
+          },
           "writable": true
         },
         {
-          "name": "treasury_sol",
+          "docs": [
+            "Mint SPL del token TIMLG (ya creado off-chain en tests o en deploy script)"
+          ],
+          "name": "timlg_mint",
+          "writable": true
+        },
+        {
           "docs": [
             "✅ NUEVO: Treasury SOL (lamports) como system-owned PDA (igual que vault)"
           ],
-          "writable": true,
+          "name": "treasury_sol",
           "pda": {
             "seeds": [
               {
@@ -1824,14 +2211,14 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "treasury",
           "docs": [
             "Treasury SPL = TokenAccount PDA controlado por el programa (authority = config PDA)"
           ],
-          "writable": true,
+          "name": "treasury",
           "pda": {
             "seeds": [
               {
@@ -1851,24 +2238,25 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -1884,20 +2272,20 @@
           "name": "reveal_window_slots",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "name": "initialize_config"
     },
     {
-      "name": "initialize_oracle_set",
-      "discriminator": [
-        130,
-        190,
-        220,
-        106,
-        237,
-        202,
-        154,
-        216
-      ],
       "accounts": [
         {
           "name": "config",
@@ -1922,7 +2310,6 @@
         },
         {
           "name": "oracle_set",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -1948,20 +2335,21 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -1975,24 +2363,23 @@
             "vec": "pubkey"
           }
         }
-      ]
+      ],
+      "discriminator": [
+        130,
+        190,
+        220,
+        106,
+        237,
+        202,
+        154,
+        216
+      ],
+      "name": "initialize_oracle_set"
     },
     {
-      "name": "initialize_round_registry",
-      "discriminator": [
-        168,
-        224,
-        102,
-        212,
-        197,
-        199,
-        124,
-        55
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2010,11 +2397,11 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "round_registry",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2044,20 +2431,21 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -2065,24 +2453,23 @@
           "name": "start_round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        168,
+        224,
+        102,
+        212,
+        197,
+        199,
+        124,
+        55
+      ],
+      "name": "initialize_round_registry"
     },
     {
-      "name": "initialize_tokenomics",
-      "discriminator": [
-        212,
-        84,
-        141,
-        244,
-        21,
-        193,
-        39,
-        208
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2100,14 +2487,14 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
         },
         {
           "name": "tokenomics",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2133,11 +2520,11 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "reward_fee_pool",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2168,11 +2555,11 @@
                 "path": "tokenomics"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "replication_pool",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2204,24 +2591,25 @@
                 "path": "tokenomics"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         },
         {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "address": "SysvarRent111111111111111111111111111111111",
+          "name": "rent"
         }
       ],
       "args": [
@@ -2229,24 +2617,23 @@
           "name": "reward_fee_bps",
           "type": "u16"
         }
-      ]
+      ],
+      "discriminator": [
+        212,
+        84,
+        141,
+        244,
+        21,
+        193,
+        39,
+        208
+      ],
+      "name": "initialize_tokenomics"
     },
     {
-      "name": "migrate_config",
-      "discriminator": [
-        92,
-        131,
-        58,
-        105,
-        210,
-        154,
-        224,
-        193
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2264,32 +2651,33 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
-      "args": []
+      "args": [],
+      "discriminator": [
+        92,
+        131,
+        58,
+        105,
+        210,
+        154,
+        224,
+        193
+      ],
+      "name": "migrate_config"
     },
     {
-      "name": "recover_funds",
-      "discriminator": [
-        194,
-        165,
-        70,
-        223,
-        66,
-        241,
-        45,
-        34
-      ],
       "accounts": [
         {
           "name": "config",
@@ -2297,7 +2685,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2318,7 +2705,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "ticket",
@@ -2326,11 +2714,11 @@
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true,
           "relations": [
             "ticket"
-          ]
+          ],
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_token_account",
@@ -2338,7 +2726,6 @@
         },
         {
           "name": "timlg_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2365,18 +2752,19 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -2384,20 +2772,20 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        194,
+        165,
+        70,
+        223,
+        66,
+        241,
+        45,
+        34
+      ],
+      "name": "recover_funds"
     },
     {
-      "name": "recover_funds_anyone",
-      "discriminator": [
-        63,
-        252,
-        95,
-        65,
-        228,
-        16,
-        150,
-        104
-      ],
       "accounts": [
         {
           "name": "config",
@@ -2422,7 +2810,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2443,11 +2830,11 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "ticket",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2473,19 +2860,20 @@
                 "path": "user"
               },
               {
+                "account": "Ticket",
                 "kind": "account",
-                "path": "ticket.nonce",
-                "account": "Ticket"
+                "path": "ticket.nonce"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
           "relations": [
             "ticket"
-          ]
+          ],
+          "writable": true
         },
         {
           "name": "user_token_account",
@@ -2493,7 +2881,6 @@
         },
         {
           "name": "timlg_vault",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2520,23 +2907,24 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint"
         },
         {
           "name": "cranker",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -2544,20 +2932,20 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        63,
+        252,
+        95,
+        65,
+        228,
+        16,
+        150,
+        104
+      ],
+      "name": "recover_funds_anyone"
     },
     {
-      "name": "remove_oracle",
-      "discriminator": [
-        60,
-        93,
-        51,
-        197,
-        182,
-        42,
-        170,
-        26
-      ],
       "accounts": [
         {
           "name": "config",
@@ -2582,7 +2970,6 @@
         },
         {
           "name": "oracle_set",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2608,7 +2995,8 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -2620,20 +3008,20 @@
           "name": "oracle",
           "type": "pubkey"
         }
-      ]
+      ],
+      "discriminator": [
+        60,
+        93,
+        51,
+        197,
+        182,
+        42,
+        170,
+        26
+      ],
+      "name": "remove_oracle"
     },
     {
-      "name": "reveal_batch",
-      "discriminator": [
-        42,
-        176,
-        196,
-        168,
-        123,
-        47,
-        195,
-        121
-      ],
       "accounts": [
         {
           "name": "config",
@@ -2658,7 +3046,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2679,7 +3066,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
@@ -2701,20 +3089,20 @@
             }
           }
         }
-      ]
-    },
-    {
-      "name": "reveal_batch_signed",
+      ],
       "discriminator": [
-        157,
-        126,
-        204,
-        244,
-        23,
-        210,
-        88,
+        42,
+        176,
+        196,
+        168,
+        123,
+        47,
+        195,
         121
       ],
+      "name": "reveal_batch"
+    },
+    {
       "accounts": [
         {
           "name": "config",
@@ -2739,7 +3127,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2760,18 +3147,19 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "payer",
           "docs": [
             "Relayer paying tx fees (must sign tx)"
           ],
+          "name": "payer",
           "signer": true
         },
         {
-          "name": "instructions",
-          "address": "Sysvar1nstructions1111111111111111111111111"
+          "address": "Sysvar1nstructions1111111111111111111111111",
+          "name": "instructions"
         }
       ],
       "args": [
@@ -2789,20 +3177,20 @@
             }
           }
         }
-      ]
+      ],
+      "discriminator": [
+        157,
+        126,
+        204,
+        244,
+        23,
+        210,
+        88,
+        121
+      ],
+      "name": "reveal_batch_signed"
     },
     {
-      "name": "reveal_ticket",
-      "discriminator": [
-        223,
-        24,
-        70,
-        21,
-        181,
-        13,
-        151,
-        239
-      ],
       "accounts": [
         {
           "name": "config",
@@ -2827,7 +3215,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2848,11 +3235,11 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "ticket",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2882,7 +3269,8 @@
                 "path": "nonce"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
@@ -2911,24 +3299,23 @@
             ]
           }
         }
-      ]
+      ],
+      "discriminator": [
+        223,
+        24,
+        70,
+        21,
+        181,
+        13,
+        151,
+        239
+      ],
+      "name": "reveal_ticket"
     },
     {
-      "name": "set_claim_grace_slots",
-      "discriminator": [
-        186,
-        199,
-        198,
-        137,
-        128,
-        29,
-        135,
-        49
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2946,7 +3333,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -2958,24 +3346,23 @@
           "name": "claim_grace_slots",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        186,
+        199,
+        198,
+        137,
+        128,
+        29,
+        135,
+        49
+      ],
+      "name": "set_claim_grace_slots"
     },
     {
-      "name": "set_oracle_pubkey",
-      "discriminator": [
-        90,
-        135,
-        153,
-        229,
-        200,
-        95,
-        163,
-        243
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -2993,7 +3380,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3005,20 +3393,20 @@
           "name": "oracle_pubkey",
           "type": "pubkey"
         }
-      ]
+      ],
+      "discriminator": [
+        90,
+        135,
+        153,
+        229,
+        200,
+        95,
+        163,
+        243
+      ],
+      "name": "set_oracle_pubkey"
     },
     {
-      "name": "set_oracle_threshold",
-      "discriminator": [
-        181,
-        85,
-        21,
-        30,
-        120,
-        168,
-        37,
-        233
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3043,7 +3431,6 @@
         },
         {
           "name": "oracle_set",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3069,7 +3456,8 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3081,24 +3469,23 @@
           "name": "threshold",
           "type": "u8"
         }
-      ]
+      ],
+      "discriminator": [
+        181,
+        85,
+        21,
+        30,
+        120,
+        168,
+        37,
+        233
+      ],
+      "name": "set_oracle_threshold"
     },
     {
-      "name": "set_pause",
-      "discriminator": [
-        63,
-        32,
-        154,
-        2,
-        56,
-        103,
-        79,
-        45
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3116,7 +3503,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3128,20 +3516,20 @@
           "name": "paused",
           "type": "bool"
         }
-      ]
+      ],
+      "discriminator": [
+        63,
+        32,
+        154,
+        2,
+        56,
+        103,
+        79,
+        45
+      ],
+      "name": "set_pause"
     },
     {
-      "name": "set_pulse_signed",
-      "discriminator": [
-        50,
-        221,
-        54,
-        125,
-        25,
-        40,
-        123,
-        89
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3166,7 +3554,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3187,11 +3574,12 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "instructions",
-          "address": "Sysvar1nstructions1111111111111111111111111"
+          "address": "Sysvar1nstructions1111111111111111111111111",
+          "name": "instructions"
         }
       ],
       "args": [
@@ -3208,24 +3596,23 @@
             ]
           }
         }
-      ]
+      ],
+      "discriminator": [
+        50,
+        221,
+        54,
+        125,
+        25,
+        40,
+        123,
+        89
+      ],
+      "name": "set_pulse_signed"
     },
     {
-      "name": "settle_round_tokens",
-      "discriminator": [
-        237,
-        209,
-        221,
-        2,
-        7,
-        78,
-        113,
-        158
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3243,7 +3630,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "tokenomics",
@@ -3276,7 +3664,6 @@
         },
         {
           "name": "round",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3297,7 +3684,8 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint",
@@ -3317,12 +3705,12 @@
         },
         {
           "name": "payer",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         }
       ],
       "args": [
@@ -3330,20 +3718,20 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        237,
+        209,
+        221,
+        2,
+        7,
+        78,
+        113,
+        158
+      ],
+      "name": "settle_round_tokens"
     },
     {
-      "name": "sweep_unclaimed",
-      "discriminator": [
-        64,
-        168,
-        221,
-        224,
-        42,
-        216,
-        138,
-        144
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3375,11 +3763,10 @@
           "writable": true
         },
         {
-          "name": "timlg_vault",
           "docs": [
             "✅ SPL vault per round"
           ],
-          "writable": true,
+          "name": "timlg_vault",
           "pda": {
             "seeds": [
               {
@@ -3406,14 +3793,14 @@
                 "path": "round_id"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
-          "name": "treasury",
           "docs": [
             "✅ SPL destination (from config)"
           ],
-          "writable": true,
+          "name": "treasury",
           "pda": {
             "seeds": [
               {
@@ -3433,7 +3820,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "timlg_mint",
@@ -3441,16 +3829,16 @@
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -3458,24 +3846,23 @@
           "name": "round_id",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        64,
+        168,
+        221,
+        224,
+        42,
+        216,
+        138,
+        144
+      ],
+      "name": "sweep_unclaimed"
     },
     {
-      "name": "update_sol_service_fee",
-      "discriminator": [
-        205,
-        10,
-        164,
-        129,
-        227,
-        229,
-        63,
-        156
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3493,7 +3880,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3505,24 +3893,23 @@
           "name": "new_fee",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        205,
+        10,
+        164,
+        129,
+        227,
+        229,
+        63,
+        156
+      ],
+      "name": "update_sol_service_fee"
     },
     {
-      "name": "update_stake_amount",
-      "discriminator": [
-        253,
-        105,
-        70,
-        4,
-        212,
-        31,
-        206,
-        34
-      ],
       "accounts": [
         {
           "name": "config",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3540,7 +3927,8 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3552,20 +3940,20 @@
           "name": "new_stake_amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        253,
+        105,
+        70,
+        4,
+        212,
+        31,
+        206,
+        34
+      ],
+      "name": "update_stake_amount"
     },
     {
-      "name": "update_tokenomics",
-      "discriminator": [
-        84,
-        5,
-        120,
-        188,
-        85,
-        71,
-        140,
-        3
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3590,7 +3978,6 @@
         },
         {
           "name": "tokenomics",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3616,7 +4003,8 @@
                 "path": "config"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
@@ -3628,20 +4016,20 @@
           "name": "reward_fee_bps",
           "type": "u16"
         }
-      ]
+      ],
+      "discriminator": [
+        84,
+        5,
+        120,
+        188,
+        85,
+        71,
+        140,
+        3
+      ],
+      "name": "update_tokenomics"
     },
     {
-      "name": "withdraw_escrow",
-      "discriminator": [
-        81,
-        84,
-        226,
-        128,
-        245,
-        47,
-        96,
-        104
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3670,7 +4058,6 @@
         },
         {
           "name": "user_escrow",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3697,11 +4084,11 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user_escrow_ata",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3734,20 +4121,21 @@
                 "path": "user"
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "user",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
           "name": "user_timlg_ata",
           "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         }
       ],
       "args": [
@@ -3755,20 +4143,20 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        81,
+        84,
+        226,
+        128,
+        245,
+        47,
+        96,
+        104
+      ],
+      "name": "withdraw_escrow"
     },
     {
-      "name": "withdraw_treasury_sol",
-      "discriminator": [
-        183,
-        223,
-        87,
-        23,
-        30,
-        186,
-        126,
-        187
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3793,7 +4181,6 @@
         },
         {
           "name": "treasury_sol",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -3817,16 +4204,17 @@
                 ]
               }
             ]
-          }
+          },
+          "writable": true
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "address": "11111111111111111111111111111111",
+          "name": "system_program"
         }
       ],
       "args": [
@@ -3834,20 +4222,20 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        183,
+        223,
+        87,
+        23,
+        30,
+        186,
+        126,
+        187
+      ],
+      "name": "withdraw_treasury_sol"
     },
     {
-      "name": "withdraw_treasury_tokens",
-      "discriminator": [
-        133,
-        133,
-        63,
-        52,
-        57,
-        241,
-        76,
-        215
-      ],
       "accounts": [
         {
           "name": "config",
@@ -3880,12 +4268,12 @@
         },
         {
           "name": "admin",
-          "writable": true,
-          "signer": true
+          "signer": true,
+          "writable": true
         },
         {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "name": "token_program"
         }
       ],
       "args": [
@@ -3893,419 +4281,30 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "discriminator": [
+        133,
+        133,
+        63,
+        52,
+        57,
+        241,
+        76,
+        215
+      ],
+      "name": "withdraw_treasury_tokens"
     }
   ],
-  "accounts": [
-    {
-      "name": "Config",
-      "discriminator": [
-        155,
-        12,
-        170,
-        224,
-        30,
-        250,
-        204,
-        130
-      ]
-    },
-    {
-      "name": "OracleSet",
-      "discriminator": [
-        128,
-        26,
-        73,
-        134,
-        218,
-        90,
-        126,
-        42
-      ]
-    },
-    {
-      "name": "Round",
-      "discriminator": [
-        87,
-        127,
-        165,
-        51,
-        73,
-        78,
-        116,
-        174
-      ]
-    },
-    {
-      "name": "RoundRegistry",
-      "discriminator": [
-        89,
-        3,
-        13,
-        175,
-        73,
-        80,
-        211,
-        206
-      ]
-    },
-    {
-      "name": "Ticket",
-      "discriminator": [
-        41,
-        228,
-        24,
-        165,
-        78,
-        90,
-        235,
-        200
-      ]
-    },
-    {
-      "name": "Tokenomics",
-      "discriminator": [
-        252,
-        176,
-        228,
-        183,
-        130,
-        36,
-        15,
-        194
-      ]
-    },
-    {
-      "name": "UserEscrow",
-      "discriminator": [
-        242,
-        233,
-        85,
-        38,
-        26,
-        5,
-        142,
-        109
-      ]
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "Unauthorized",
-      "msg": "Unauthorized"
-    },
-    {
-      "code": 6001,
-      "name": "Paused",
-      "msg": "Protocol paused"
-    },
-    {
-      "code": 6002,
-      "name": "InvalidDeadlines",
-      "msg": "Invalid deadlines"
-    },
-    {
-      "code": 6003,
-      "name": "CommitClosed",
-      "msg": "Commit window closed"
-    },
-    {
-      "code": 6004,
-      "name": "RevealClosed",
-      "msg": "Reveal window closed"
-    },
-    {
-      "code": 6005,
-      "name": "PulseNotSet",
-      "msg": "Pulse not set"
-    },
-    {
-      "code": 6006,
-      "name": "PulseAlreadySet",
-      "msg": "Round pulse already set"
-    },
-    {
-      "code": 6007,
-      "name": "AlreadyFinalized",
-      "msg": "Round already finalized"
-    },
-    {
-      "code": 6008,
-      "name": "NotFinalized",
-      "msg": "Round not finalized"
-    },
-    {
-      "code": 6009,
-      "name": "CannotFinalizeYet",
-      "msg": "Cannot finalize yet"
-    },
-    {
-      "code": 6010,
-      "name": "AlreadyRevealed",
-      "msg": "Already revealed"
-    },
-    {
-      "code": 6011,
-      "name": "CommitmentMismatch",
-      "msg": "Commitment mismatch"
-    },
-    {
-      "code": 6012,
-      "name": "InvalidGuess",
-      "msg": "Invalid guess (must be 0/1)"
-    },
-    {
-      "code": 6013,
-      "name": "TooManyEntries",
-      "msg": "Too many entries"
-    },
-    {
-      "code": 6014,
-      "name": "TicketPdaMismatch",
-      "msg": "Ticket PDA mismatch"
-    },
-    {
-      "code": 6015,
-      "name": "TicketAlreadyExists",
-      "msg": "Ticket already exists"
-    },
-    {
-      "code": 6016,
-      "name": "TicketNotOwnedByProgram",
-      "msg": "Ticket not owned by program"
-    },
-    {
-      "code": 6017,
-      "name": "VaultPdaMismatch",
-      "msg": "Vault PDA mismatch"
-    },
-    {
-      "code": 6018,
-      "name": "InsufficientVaultFunds",
-      "msg": "Insufficient vault funds"
-    },
-    {
-      "code": 6019,
-      "name": "MissingOrInvalidEd25519Ix",
-      "msg": "Missing or invalid ed25519 verify instruction"
-    },
-    {
-      "code": 6020,
-      "name": "Ed25519PubkeyMismatch",
-      "msg": "Ed25519 pubkey mismatch"
-    },
-    {
-      "code": 6021,
-      "name": "Ed25519MessageMismatch",
-      "msg": "Ed25519 message mismatch"
-    },
-    {
-      "code": 6022,
-      "name": "OracleNotSet",
-      "msg": "Oracle pubkey not set"
-    },
-    {
-      "code": 6023,
-      "name": "BitIndexMismatch",
-      "msg": "Bit index mismatch"
-    },
-    {
-      "code": 6024,
-      "name": "AccountBorrowFailed",
-      "msg": "Failed to borrow account data"
-    },
-    {
-      "code": 6025,
-      "name": "RoundFinalized",
-      "msg": "Round is finalized"
-    },
-    {
-      "code": 6026,
-      "name": "CommitAfterPulseSet",
-      "msg": "Commit not allowed after pulse is set"
-    },
-    {
-      "code": 6027,
-      "name": "SweepTooEarly",
-      "msg": "Sweep not allowed yet (grace period not elapsed)"
-    },
-    {
-      "code": 6028,
-      "name": "AlreadySwept",
-      "msg": "Vault already swept for this round"
-    },
-    {
-      "code": 6029,
-      "name": "ClaimAfterSweep",
-      "msg": "Cannot claim after vault sweep"
-    },
-    {
-      "code": 6030,
-      "name": "InvalidStakeAmount",
-      "msg": "Invalid stake amount"
-    },
-    {
-      "code": 6031,
-      "name": "InvalidWindow",
-      "msg": "Invalid window"
-    },
-    {
-      "code": 6032,
-      "name": "MissingBump",
-      "msg": "Missing bump"
-    },
-    {
-      "code": 6033,
-      "name": "MathOverflow",
-      "msg": "Math overflow"
-    },
-    {
-      "code": 6034,
-      "name": "TIMLGMintMismatch",
-      "msg": "timlg_mint does not match config"
-    },
-    {
-      "code": 6035,
-      "name": "InvalidUserTIMLGAta",
-      "msg": "Invalid user TIMLG token account"
-    },
-    {
-      "code": 6036,
-      "name": "TicketNotRevealed",
-      "msg": "Ticket not revealed"
-    },
-    {
-      "code": 6037,
-      "name": "NotWinner",
-      "msg": "Not a winner"
-    },
-    {
-      "code": 6038,
-      "name": "AlreadyClaimed",
-      "msg": "Already claimed"
-    },
-    {
-      "code": 6039,
-      "name": "StakeNotPaid",
-      "msg": "Stake not paid for this ticket"
-    },
-    {
-      "code": 6040,
-      "name": "InsufficientEscrow",
-      "msg": "Insufficient escrow funds"
-    },
-    {
-      "code": 6041,
-      "name": "SignedBatchMixedUsers",
-      "msg": "Signed batch contains mixed users"
-    },
-    {
-      "code": 6042,
-      "name": "RoundNotSettled",
-      "msg": "Round tokens not settled yet"
-    },
-    {
-      "code": 6043,
-      "name": "SettleTooEarly",
-      "msg": "Too early to settle round tokens"
-    },
-    {
-      "code": 6044,
-      "name": "RoundTokensAlreadySettled",
-      "msg": "Round tokens already settled"
-    },
-    {
-      "code": 6045,
-      "name": "OracleSetFull",
-      "msg": "OracleSet is full"
-    },
-    {
-      "code": 6046,
-      "name": "OracleAlreadyExists",
-      "msg": "Oracle already exists in allowlist"
-    },
-    {
-      "code": 6047,
-      "name": "OracleNotFound",
-      "msg": "Oracle not found in allowlist"
-    },
-    {
-      "code": 6048,
-      "name": "InvalidThreshold",
-      "msg": "Invalid threshold"
-    },
-    {
-      "code": 6049,
-      "name": "ThresholdExceedsOracleCount",
-      "msg": "Threshold exceeds current oracle count"
-    },
-    {
-      "code": 6050,
-      "name": "InvalidFeeBps",
-      "msg": "Invalid fee bps (must be 0..=10_000)."
-    },
-    {
-      "code": 6051,
-      "name": "InvalidBps",
-      "msg": "Invalid basis points (must be <= 10000)"
-    },
-    {
-      "code": 12052,
-      "name": "RefundTooEarly",
-      "msg": "Refund too early"
-    },
-    {
-      "code": 12053,
-      "name": "VaultNotEmpty",
-      "msg": "Vault not empty"
-    },
-    {
-      "code": 12054,
-      "name": "RevealWindowTooShort",
-      "msg": "Reveal window too short"
-    },
-    {
-      "code": 12055,
-      "name": "TokenomicsNotInitialized",
-      "msg": "Tokenomics not initialized"
-    },
-    {
-      "code": 12056,
-      "name": "NotSwept",
-      "msg": "Round not swept"
-    },
-    {
-      "code": 12057,
-      "name": "RoundTokensNotSettled",
-      "msg": "Round tokens not settled"
-    },
-    {
-      "code": 12058,
-      "name": "TicketAlreadyProcessed",
-      "msg": "Ticket already processed"
-    },
-    {
-      "code": 12059,
-      "name": "TicketNotProcessed",
-      "msg": "Ticket not processed yet"
-    },
-    {
-      "code": 12060,
-      "name": "WinnerMustClaimFirst",
-      "msg": "Winner must claim reward first"
-    },
-    {
-      "code": 12061,
-      "name": "PulseTooLate",
-      "msg": "Pulse too late (liveness hazard)"
-    }
-  ],
+  "metadata": {
+    "description": "Created with Anchor",
+    "name": "timlg_protocol",
+    "spec": "0.1.0",
+    "version": "0.1.0"
+  },
   "types": [
     {
       "name": "CommitEntry",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "nonce",
@@ -4320,13 +4319,13 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "CommitSignedEntry",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "user",
@@ -4345,13 +4344,13 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "Config",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "admin",
@@ -4413,13 +4412,13 @@
             "name": "sol_service_fee_lamports",
             "type": "u64"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "OracleSet",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "admin",
@@ -4430,18 +4429,18 @@
             "type": "u8"
           },
           {
-            "name": "threshold",
             "docs": [
               "Minimum number of oracle attestations required (PR2 will consume this)."
             ],
+            "name": "threshold",
             "type": "u8"
           },
           {
-            "name": "oracles",
             "docs": [
               "Allowlisted oracle pubkeys.",
               "NOTE: fixed max_len to keep account size deterministic."
             ],
+            "name": "oracles",
             "type": {
               "vec": "pubkey"
             }
@@ -4450,13 +4449,13 @@
             "name": "version",
             "type": "u16"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "RevealEntry",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "nonce",
@@ -4475,13 +4474,13 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "RevealSignedEntry",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "user",
@@ -4504,13 +4503,13 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "Round",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "round_id",
@@ -4629,13 +4628,13 @@
             "name": "close_unclaimed_mint_done",
             "type": "bool"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "RoundRegistry",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "admin",
@@ -4653,13 +4652,13 @@
             "name": "version",
             "type": "u16"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "Ticket",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "round_id",
@@ -4730,13 +4729,13 @@
             "name": "revealed_slot",
             "type": "u64"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "Tokenomics",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "admin",
@@ -4747,17 +4746,17 @@
             "type": "u8"
           },
           {
-            "name": "reward_fee_bps",
             "docs": [
               "Fee charged on minted rewards (basis points). 100 = 1%."
             ],
+            "name": "reward_fee_bps",
             "type": "u16"
           },
           {
-            "name": "reward_fee_pool",
             "docs": [
               "SPL TokenAccount PDAs (TIMLG mint)"
             ],
+            "name": "reward_fee_pool",
             "type": "pubkey"
           },
           {
@@ -4776,13 +4775,13 @@
             "name": "version",
             "type": "u16"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "UserEscrow",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "user",
@@ -4800,7 +4799,8 @@
             "name": "updated_slot",
             "type": "u64"
           }
-        ]
+        ],
+        "kind": "struct"
       }
     }
   ]

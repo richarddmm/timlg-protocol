@@ -3,7 +3,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
-use crate::state::{Config, OracleSet, Round, RoundRegistry, Ticket, UserEscrow, Tokenomics};
+use crate::state::{Config, OracleSet, Round, RoundRegistry, Ticket, UserEscrow, Tokenomics, UserStats};
 
 #[derive(Accounts)]
 pub struct InitializeTokenomics<'info> {
@@ -720,6 +720,13 @@ pub struct CloseTicket<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -811,6 +818,15 @@ pub struct CommitTicket<'info> {
     pub user: Signer<'info>,
 
     #[account(
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
+    #[account(
         mut,
         constraint = user_timlg_ata.mint == timlg_mint.key(),
         constraint = user_timlg_ata.owner == user.key()
@@ -860,6 +876,13 @@ pub struct RevealTicket<'info> {
     pub ticket: Account<'info, Ticket>,
 
     pub user: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
 }
 
 #[derive(Accounts)]
@@ -887,6 +910,15 @@ pub struct CommitBatch<'info> {
 
     #[account(mut)]
     pub user: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
 
     #[account(
         mut,
@@ -925,6 +957,14 @@ pub struct RevealBatch<'info> {
     pub round: Account<'info, Round>,
 
     pub user: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
     // tickets via remaining_accounts (writable)
 }
 
@@ -954,6 +994,15 @@ pub struct CommitBatchSigned<'info> {
     /// Relayer (paga fees)
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = payer,
+        space = 8 + UserStats::INIT_SPACE,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
 
     #[account(
         mut,
@@ -1007,6 +1056,16 @@ pub struct RevealBatchSigned<'info> {
     /// Relayer paying tx fees (must sign tx)
     pub payer: Signer<'info>,
 
+    /// CHECK: user pubkey referenced in ed25519 msg
+    pub user: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
     /// CHECK: instruction sysvar (for ed25519 introspection). Address enforced.
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
     pub instructions: UncheckedAccount<'info>,
@@ -1051,6 +1110,13 @@ pub struct ClaimReward<'info> {
 
     #[account(mut)]
     pub user: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
 
     #[account(mut, address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,

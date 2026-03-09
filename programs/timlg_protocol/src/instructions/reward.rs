@@ -8,6 +8,7 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     let round = &mut ctx.accounts.round;
     let ticket = &mut ctx.accounts.ticket;
     let tokenomics = &ctx.accounts.tokenomics;
+    let user_stats = &mut ctx.accounts.user_stats;
 
     let current_slot = Clock::get()?.slot;
 
@@ -119,6 +120,8 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
 
     ticket.claimed = true;
     ticket.claimed_slot = Clock::get()?.slot;
+    
+    user_stats.tickets_claimed = user_stats.tickets_claimed.saturating_add(1);
 
     Ok(())
 }
