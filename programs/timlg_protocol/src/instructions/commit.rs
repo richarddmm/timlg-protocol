@@ -224,7 +224,7 @@ pub fn commit_batch<'info>(
             .try_borrow_mut_data()
             .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
 
-        let ticket = Ticket {
+        let mut ticket = Ticket {
             round_id,
             user: user_pk,
             nonce: e.nonce,
@@ -424,7 +424,7 @@ pub fn commit_batch_signed<'info>(
             .try_borrow_mut_data()
             .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
 
-        let ticket = Ticket {
+        let mut ticket = Ticket {
             round_id,
             user: user_pk,
             nonce: e.nonce,
