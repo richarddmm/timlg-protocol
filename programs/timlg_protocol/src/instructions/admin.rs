@@ -480,8 +480,8 @@ pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
         )?;
     }
 
-    // 4. Realloc
-    config_info.realloc(new_size, false)?; // Reverted to realloc since resize isn't always stable on old anchors
+    // 4. Resize
+    config_info.resize(new_size)?; // Reverted to realloc since resize isn't always stable on old anchors
     
     msg!("Config migrated to size: {}", new_size);
 

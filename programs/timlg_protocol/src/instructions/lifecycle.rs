@@ -125,7 +125,9 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
     if is_token_account {
         // B) Quemar el Stake de los Losers y Unreveals (Deflación Garantizada)
         if !round.close_burn_done {
-            let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+            let data = ctx.accounts.timlg_vault.try_borrow_data()?;
+            let mut slice: &[u8] = &data;
+            let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
             let current_balance = timlg_vault.amount;
             
             // El stake que legalmente pertenece a los ganadores que aún no han reclamado
@@ -158,7 +160,9 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
         round.close_unclaimed_mint_done = true;
 
         // C) Transferir el remanente (Stake de los ganadores no reclamados) a Treasury
-        let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+        let data = ctx.accounts.timlg_vault.try_borrow_data()?;
+        let mut slice: &[u8] = &data;
+        let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
         let vault_tokens = timlg_vault.amount;
         if vault_tokens > 0 {
             let round_le = round_id.to_le_bytes();
@@ -374,7 +378,9 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
         let is_token_account = *timlg_vault_info.owner == ctx.accounts.token_program.key() && timlg_vault_info.data_len() == 165;
 
         if is_token_account {
-             let timlg_vault = Account::<TokenAccount>::try_from(&timlg_vault_info)?;
+             let data = ctx.accounts.timlg_vault.try_borrow_data()?;
+             let mut slice: &[u8] = &data;
+             let timlg_vault = TokenAccount::try_deserialize(&mut slice)?;
              require!(
                 round.token_settled || round.committed_count == 0 || timlg_vault.amount == 0,
                 TimlgError::RoundTokensNotSettled
