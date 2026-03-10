@@ -1295,3 +1295,18 @@ pub struct MigrateConfig<'info> {
 
     pub system_program: Program<'info, System>,
 }
+#[derive(Accounts)]
+pub struct CloseUserStats<'info> {
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump,
+        close = user
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
+    #[account(mut)]
+    pub user: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}

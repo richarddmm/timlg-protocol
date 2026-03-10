@@ -275,4 +275,7 @@ pub mod timlg_protocol {
         admin::update_tokenomics(ctx, reward_fee_bps)
     }
 
+    pub fn close_user_stats(ctx: Context<CloseUserStats>) -> Result<()> {
+        lifecycle::close_user_stats(ctx)
+    }
 }

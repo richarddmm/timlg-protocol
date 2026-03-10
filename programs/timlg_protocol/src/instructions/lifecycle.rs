@@ -657,4 +657,9 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
     Ok(())
 }
 
+pub fn close_user_stats(_ctx: Context<CloseUserStats>) -> Result<()> {
+    // Account closure and rent reclamation handled by Anchor context.
+    Ok(())
+}
+
 
