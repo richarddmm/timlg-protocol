@@ -596,8 +596,9 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
             return Err(error!(TimlgError::TicketNotProcessed));
         }
         
-        // Count as swept if ticket wasn't revealed, and it wasn't a refund mode (user willingly skipped it)
-        if !ticket.revealed && !is_refund_mode {
+        // Count as swept ONLY if the ticket was a winner but wasn't claimed.
+        // Expired and Loss tickets just die here (reclaiming rent is silent).
+        if ticket.win && !ticket.claimed && !is_refund_mode {
             user_stats.tickets_swept = user_stats.tickets_swept.saturating_add(1);
         }
     } else {
