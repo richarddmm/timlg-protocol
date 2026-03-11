@@ -7,11 +7,11 @@ use anchor_spl::token::{self, Transfer};
 
 use crate::{
     errors::TimlgError,
-    init_user_stats_if_needed,
     state::Ticket,
     utils::{
-        derive_bit_index, expected_commit_msg, parse_ed25519_ix_pubkey_and_msg,
-        CommitEntry, CommitSignedEntry, MAX_BATCH, TICKET_SEED,
+        derive_bit_index, expected_commit_msg, init_user_stats_if_needed,
+        parse_ed25519_ix_pubkey_and_msg, CommitEntry, CommitSignedEntry, MAX_BATCH,
+        TICKET_SEED,
     },
     CommitBatch, CommitBatchSigned, CommitTicket,
 };
@@ -112,7 +112,7 @@ pub fn commit_ticket(
 }
 
 pub fn commit_batch<'info>(
-    ctx: Context<CommitBatch<'info>>,
+    ctx: Context<'_, '_, 'info, 'info, CommitBatch<'info>>,
     round_id: u64,
     entries: Vec<CommitEntry>,
 ) -> Result<()> {
@@ -271,7 +271,7 @@ pub fn commit_batch<'info>(
 }
 
 pub fn commit_batch_signed<'info>(
-    ctx: Context<CommitBatchSigned<'info>>,
+    ctx: Context<'_, '_, 'info, 'info, CommitBatchSigned<'info>>,
     round_id: u64,
     entries: Vec<CommitSignedEntry>,
 ) -> Result<()> {
