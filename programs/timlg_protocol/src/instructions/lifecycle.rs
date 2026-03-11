@@ -78,8 +78,13 @@ pub fn sweep_unclaimed(ctx: Context<SweepUnclaimed>, round_id: u64) -> Result<()
 
         require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
         // Allow sweep of unfinalized rounds ONLY if they never received tickets
+        // OR if they are extrêmement old (zombies)
         if round.committed_count > 0 {
-            require!(round.finalized, TimlgError::NotFinalized);
+            let current_slot = Clock::get().map_err(|_| error!(TimlgError::AccountBorrowFailed))?.slot;
+            let is_zombie = current_slot > round.reveal_deadline_slot.saturating_add(ZOMBIE_CLEANUP_THRESHOLD_SLOTS);
+            if !is_zombie {
+                require!(round.finalized, TimlgError::NotFinalized);
+            }
         }
         require!(!round.swept, TimlgError::AlreadySwept);
 
@@ -375,8 +380,13 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
         require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
         
         // Safety checks: ensure round is completely done
+        // Allow cleanup of non-finalized rounds if they are extreme zombies
         if round.committed_count > 0 {
-            require!(round.finalized, TimlgError::NotFinalized);
+            let current_slot = Clock::get().map_err(|_| error!(TimlgError::AccountBorrowFailed))?.slot;
+            let is_zombie = current_slot > round.reveal_deadline_slot.saturating_add(ZOMBIE_CLEANUP_THRESHOLD_SLOTS);
+            if !is_zombie {
+                require!(round.finalized, TimlgError::NotFinalized);
+            }
         }
         // If no tickets were committed, token_settled might be false, which is fine.
         let timlg_vault_info = ctx.accounts.timlg_vault.to_account_info();

@@ -263,6 +263,10 @@
         {
           "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -556,33 +560,7 @@
       "accounts": [
         {
           "name": "user_stats",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  117,
-                  115,
-                  101,
-                  114,
-                  95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  115,
-                  95,
-                  118,
-                  51
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "user",
@@ -2758,6 +2736,36 @@
           }
         },
         {
+          "name": "user_stats",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  115,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
           "name": "timlg_mint"
         },
         {
@@ -2918,6 +2926,7 @@
         },
         {
           "name": "user",
+          "writable": true,
           "signer": true
         },
         {
@@ -2949,6 +2958,10 @@
               }
             ]
           }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -3066,6 +3079,10 @@
               }
             ]
           }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         },
         {
           "name": "instructions",
@@ -3215,6 +3232,10 @@
               }
             ]
           }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -4410,181 +4431,186 @@
     },
     {
       "code": 6016,
+      "name": "UserStatsPdaMismatch",
+      "msg": "User stats PDA mismatch"
+    },
+    {
+      "code": 6017,
       "name": "TicketNotOwnedByProgram",
       "msg": "Ticket not owned by program"
     },
     {
-      "code": 6017,
+      "code": 6018,
       "name": "VaultPdaMismatch",
       "msg": "Vault PDA mismatch"
     },
     {
-      "code": 6018,
+      "code": 6019,
       "name": "InsufficientVaultFunds",
       "msg": "Insufficient vault funds"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "MissingOrInvalidEd25519Ix",
       "msg": "Missing or invalid ed25519 verify instruction"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "Ed25519PubkeyMismatch",
       "msg": "Ed25519 pubkey mismatch"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "Ed25519MessageMismatch",
       "msg": "Ed25519 message mismatch"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "OracleNotSet",
       "msg": "Oracle pubkey not set"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "BitIndexMismatch",
       "msg": "Bit index mismatch"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "AccountBorrowFailed",
       "msg": "Failed to borrow account data"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "RoundFinalized",
       "msg": "Round is finalized"
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "CommitAfterPulseSet",
       "msg": "Commit not allowed after pulse is set"
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "SweepTooEarly",
       "msg": "Sweep not allowed yet (grace period not elapsed)"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "AlreadySwept",
       "msg": "Vault already swept for this round"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "ClaimAfterSweep",
       "msg": "Cannot claim after vault sweep"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "InvalidStakeAmount",
       "msg": "Invalid stake amount"
     },
     {
-      "code": 6031,
+      "code": 6032,
       "name": "InvalidWindow",
       "msg": "Invalid window"
     },
     {
-      "code": 6032,
+      "code": 6033,
       "name": "MissingBump",
       "msg": "Missing bump"
     },
     {
-      "code": 6033,
+      "code": 6034,
       "name": "MathOverflow",
       "msg": "Math overflow"
     },
     {
-      "code": 6034,
+      "code": 6035,
       "name": "TIMLGMintMismatch",
       "msg": "timlg_mint does not match config"
     },
     {
-      "code": 6035,
+      "code": 6036,
       "name": "InvalidUserTIMLGAta",
       "msg": "Invalid user TIMLG token account"
     },
     {
-      "code": 6036,
+      "code": 6037,
       "name": "TicketNotRevealed",
       "msg": "Ticket not revealed"
     },
     {
-      "code": 6037,
+      "code": 6038,
       "name": "NotWinner",
       "msg": "Not a winner"
     },
     {
-      "code": 6038,
+      "code": 6039,
       "name": "AlreadyClaimed",
       "msg": "Already claimed"
     },
     {
-      "code": 6039,
+      "code": 6040,
       "name": "StakeNotPaid",
       "msg": "Stake not paid for this ticket"
     },
     {
-      "code": 6040,
+      "code": 6041,
       "name": "InsufficientEscrow",
       "msg": "Insufficient escrow funds"
     },
     {
-      "code": 6041,
+      "code": 6042,
       "name": "SignedBatchMixedUsers",
       "msg": "Signed batch contains mixed users"
     },
     {
-      "code": 6042,
+      "code": 6043,
       "name": "RoundNotSettled",
       "msg": "Round tokens not settled yet"
     },
     {
-      "code": 6043,
+      "code": 6044,
       "name": "SettleTooEarly",
       "msg": "Too early to settle round tokens"
     },
     {
-      "code": 6044,
+      "code": 6045,
       "name": "RoundTokensAlreadySettled",
       "msg": "Round tokens already settled"
     },
     {
-      "code": 6045,
+      "code": 6046,
       "name": "OracleSetFull",
       "msg": "OracleSet is full"
     },
     {
-      "code": 6046,
+      "code": 6047,
       "name": "OracleAlreadyExists",
       "msg": "Oracle already exists in allowlist"
     },
     {
-      "code": 6047,
+      "code": 6048,
       "name": "OracleNotFound",
       "msg": "Oracle not found in allowlist"
     },
     {
-      "code": 6048,
+      "code": 6049,
       "name": "InvalidThreshold",
       "msg": "Invalid threshold"
     },
     {
-      "code": 6049,
+      "code": 6050,
       "name": "ThresholdExceedsOracleCount",
       "msg": "Threshold exceeds current oracle count"
     },
     {
-      "code": 6050,
+      "code": 6051,
       "name": "InvalidFeeBps",
       "msg": "Invalid fee bps (must be 0..=10_000)."
     },
     {
-      "code": 6051,
+      "code": 6052,
       "name": "InvalidBps",
       "msg": "Invalid basis points (must be <= 10000)"
     },
