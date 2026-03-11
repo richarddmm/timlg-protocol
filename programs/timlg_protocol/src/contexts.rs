@@ -1107,20 +1107,20 @@ pub struct ClaimReward<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
     seeds = [crate::TOKENOMICS_SEED, config.key().as_ref()],
     bump = tokenomics.bump
     )]
-    pub tokenomics: Account<'info, Tokenomics>,
+    pub tokenomics: Box<Account<'info, Tokenomics>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     #[account(
         mut,
@@ -1134,7 +1134,7 @@ pub struct ClaimReward<'info> {
         has_one = user,
         close = user
     )]
-    pub ticket: Account<'info, Ticket>,
+    pub ticket: Box<Account<'info, Ticket>>,
 
     #[account(mut)]
     pub user: Signer<'info>,
@@ -1146,7 +1146,7 @@ pub struct ClaimReward<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(mut, address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,
