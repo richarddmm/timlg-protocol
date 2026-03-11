@@ -664,8 +664,30 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
     Ok(())
 }
 
-pub fn close_user_stats(_ctx: Context<CloseUserStats>) -> Result<()> {
-    // Account closure and rent reclamation handled by Anchor context.
+pub fn close_user_stats(ctx: Context<CloseUserStats>) -> Result<()> {
+    let user_stats = &ctx.accounts.user_stats;
+    let user = &ctx.accounts.user;
+
+    // Manual PDA verification
+    let (expected_pda, _bump) = Pubkey::find_program_address(
+        &[crate::USER_STATS_SEED, user.key().as_ref()],
+        ctx.program_id,
+    );
+    require_keys_eq!(expected_pda, *user_stats.key, TimlgError::UserStatsPdaMismatch);
+
+    // Close account: transfer all lamports to user and zero out data
+    let dest_lamports = user.lamports();
+    **user.lamports.borrow_mut() = dest_lamports
+        .checked_add(user_stats.lamports())
+        .ok_or(error!(TimlgError::MathOverflow))?;
+    **user_stats.lamports.borrow_mut() = 0;
+
+    let mut data = user_stats.try_borrow_mut_data()
+        .map_err(|_| error!(TimlgError::AccountBorrowFailed))?;
+    for byte in data.iter_mut() {
+        *byte = 0;
+    }
+
     Ok(())
 }
 

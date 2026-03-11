@@ -1303,16 +1303,9 @@ pub struct MigrateConfig<'info> {
     pub system_program: Program<'info, System>,
 }
 #[derive(Accounts)]
-#[instruction(bump: u8)]
 pub struct CloseUserStats<'info> {
-    #[account(
-        mut,
-        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = bump,
-        close = user
-    )]
-    /// CHECK: We are closing this account, so we don't need to deserialize it.
-    /// This allows closing accounts whose data size doesn't match the current UserStats struct.
+    #[account(mut)]
+    /// CHECK: Manual validation in instruction to support legacy size accounts.
     pub user_stats: UncheckedAccount<'info>,
 
     #[account(mut)]

@@ -36,6 +36,8 @@ pub enum TimlgError {
     TicketPdaMismatch,
     #[msg("Ticket already exists")]
     TicketAlreadyExists,
+    #[msg("User stats PDA mismatch")]
+    UserStatsPdaMismatch,
     #[msg("Ticket not owned by program")]
     TicketNotOwnedByProgram,
 
