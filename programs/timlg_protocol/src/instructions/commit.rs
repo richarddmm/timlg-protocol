@@ -7,6 +7,7 @@ use anchor_spl::token::{self, Transfer};
 
 use crate::{
     errors::TimlgError,
+    init_user_stats_if_needed,
     state::Ticket,
     utils::{
         derive_bit_index, expected_commit_msg, parse_ed25519_ix_pubkey_and_msg,
@@ -61,15 +62,13 @@ pub fn commit_ticket(
         )?;
     }
 
-    // --- UserStats ---
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
     let user_stats = &mut ctx.accounts.user_stats;
-    user_stats.user = ctx.accounts.user.key();
-    user_stats.bump = ctx.bumps.user_stats;
-
-    // Initialize last_reset_slot if newly created or reset
-    if user_stats.last_reset_slot == 0 {
-        user_stats.last_reset_slot = current_slot;
-    }
     
     // Asignamos índice a este ticket
     let user_commit_index = user_stats.games_played.checked_add(1).ok_or(TimlgError::MathOverflow)?;
@@ -113,7 +112,7 @@ pub fn commit_ticket(
 }
 
 pub fn commit_batch<'info>(
-    ctx: Context<'_, '_, 'info, 'info, CommitBatch<'info>>,
+    ctx: Context<CommitBatch<'info>>,
     round_id: u64,
     entries: Vec<CommitEntry>,
 ) -> Result<()> {
@@ -272,7 +271,7 @@ pub fn commit_batch<'info>(
 }
 
 pub fn commit_batch_signed<'info>(
-    ctx: Context<'_, '_, 'info, 'info, CommitBatchSigned<'info>>,
+    ctx: Context<CommitBatchSigned<'info>>,
     round_id: u64,
     entries: Vec<CommitSignedEntry>,
 ) -> Result<()> {

@@ -169,7 +169,7 @@ pub mod timlg_protocol {
 
     // ✅ FIX lifetimes: debe coincidir con commit::commit_batch
     pub fn commit_batch<'info>(
-        ctx: Context<'_, '_, 'info, 'info, CommitBatch<'info>>,
+        ctx: Context<CommitBatch<'info>>,
         round_id: u64,
         entries: Vec<CommitEntry>,
     ) -> Result<()> {
@@ -185,7 +185,7 @@ pub mod timlg_protocol {
     }
 
     pub fn commit_batch_signed<'info>(
-        ctx: Context<'_, '_, 'info, 'info, CommitBatchSigned<'info>>,
+        ctx: Context<CommitBatchSigned<'info>>,
         round_id: u64,
         entries: Vec<CommitSignedEntry>,
     ) -> Result<()> {
@@ -193,7 +193,7 @@ pub mod timlg_protocol {
     }
 
     pub fn reveal_batch_signed<'info>(
-        ctx: Context<'_, '_, 'info, 'info, RevealBatchSigned<'info>>,
+        ctx: Context<RevealBatchSigned<'info>>,
         round_id: u64,
         entries: Vec<RevealSignedEntry>,
     ) -> Result<()> {

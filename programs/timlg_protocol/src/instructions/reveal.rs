@@ -5,11 +5,10 @@ use anchor_lang::solana_program::sysvar::instructions::{
 
 use crate::{
     errors::TimlgError,
+    init_user_stats_if_needed,
+    reveal_core,
     state::{Round, Ticket},
-    utils::{
-        assert_ed25519_ix_matches, expected_reveal_msg, init_user_stats_if_needed, reveal_core,
-        RevealEntry, RevealSignedEntry, MAX_BATCH, TICKET_SEED,
-    },
+    utils::{MAX_BATCH, TICKET_SEED},
     RevealBatch, RevealBatchSigned, RevealTicket,
 };
 
@@ -113,7 +112,7 @@ pub fn reveal_ticket(
 }
 
 pub fn reveal_batch<'info>(
-    ctx: Context<'_, '_, '_, 'info, RevealBatch<'info>>,
+    ctx: Context<RevealBatch<'info>>,
     round_id: u64,
     entries: Vec<RevealEntry>,
 ) -> Result<()> {
@@ -196,7 +195,7 @@ pub fn reveal_batch<'info>(
 }
 
 pub fn reveal_batch_signed<'info>(
-    ctx: Context<'_, '_, 'info, 'info, RevealBatchSigned<'info>>,
+    ctx: Context<RevealBatchSigned<'info>>,
     round_id: u64,
     entries: Vec<RevealSignedEntry>,
 ) -> Result<()> {

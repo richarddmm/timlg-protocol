@@ -4,7 +4,7 @@ use anchor_lang::solana_program::{program::invoke_signed, system_instruction};
 use anchor_spl::token::{self, Burn, Transfer, TokenAccount};
 use crate::state::{Ticket, Round};
 use crate::constants::*;
-use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState, utils::init_user_stats_if_needed};
+use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState, init_user_stats_if_needed};
 
 use crate::contexts::{
     SettleRoundTokens, InitializeTokenomics, InitializeRoundRegistry, CreateRoundAuto,
@@ -494,12 +494,6 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         stake_amount,
     )?;
 
-    // Update round stats
-    // We are effectively "un-committing" this ticket.
-    if round.committed_count > 0 {
-        round.committed_count -= 1;
-    }
-
     // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
     ticket.processed = true;
 
@@ -511,6 +505,7 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
         ctx.bumps.user_stats,
         current_slot,
     )?;
+    
     let user_stats = &mut ctx.accounts.user_stats;
     if ticket.created_slot >= user_stats.last_reset_slot {
         user_stats.tickets_refunded = user_stats.tickets_refunded.saturating_add(1);
@@ -536,7 +531,7 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         ctx.bumps.user_stats,
         current_slot,
     )?;
-
+    
     let user_stats = &mut ctx.accounts.user_stats;
 
     // 3. Logic: When can you close (recover rent)?
@@ -683,6 +678,8 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
 
     // ✅ Fix: Mark as processed
     ticket.processed = true;
+
+    let current_slot = Clock::get()?.slot;
 
     init_user_stats_if_needed(
         &mut ctx.accounts.user_stats,
