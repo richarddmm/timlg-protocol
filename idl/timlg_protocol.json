@@ -2573,6 +2573,36 @@
           }
         },
         {
+          "name": "user_stats",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  115,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
           "name": "timlg_mint"
         },
         {
@@ -5150,6 +5180,14 @@
           },
           {
             "name": "tickets_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "tickets_refunded",
+            "type": "u64"
+          },
+          {
+            "name": "last_reset_slot",
             "type": "u64"
           },
           {
