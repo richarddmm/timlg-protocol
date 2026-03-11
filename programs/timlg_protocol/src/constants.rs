@@ -42,7 +42,3 @@ pub const INITIAL_VERSION: u16 = 1;
 
 /// Starting round ID for a new registry.
 pub const INITIAL_ROUND_ID: u64 = 0;
-
-/// Threshold in slots to consider a round "zombie" (stuck without finalized)
-/// and allow forceful cleanup. 20,000 slots ~ 2.2 hours.
-pub const ZOMBIE_CLEANUP_THRESHOLD_SLOTS: u64 = 20_000;

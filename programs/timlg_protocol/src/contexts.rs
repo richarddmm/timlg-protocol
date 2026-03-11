@@ -930,7 +930,9 @@ pub struct CommitBatch<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -976,7 +978,9 @@ pub struct RevealBatch<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -1015,9 +1019,11 @@ pub struct CommitBatchSigned<'info> {
     pub payer: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = payer,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -1077,9 +1083,11 @@ pub struct RevealBatchSigned<'info> {
     pub user: UncheckedAccount<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = payer,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
