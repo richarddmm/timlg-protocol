@@ -150,6 +150,20 @@ pub fn get_pulse_bit(pulse: &[u8; 64], bit_index: u16) -> u8 {
     ((pulse[byte_i] >> bit_i) & 1) as u8
 }
 
+pub fn init_user_stats_if_needed(
+    user_stats: &mut crate::state::UserStats,
+    user: Pubkey,
+    bump: u8,
+    current_slot: u64,
+) -> Result<()> {
+    if user_stats.user == Pubkey::default() {
+        user_stats.user = user;
+        user_stats.bump = bump;
+        user_stats.last_reset_slot = current_slot;
+    }
+    Ok(())
+}
+
 // -------------------------
 // Signed commit message + ed25519 parsing
 // -------------------------

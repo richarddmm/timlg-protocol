@@ -7,8 +7,8 @@ use crate::{
     errors::TimlgError,
     state::{Round, Ticket},
     utils::{
-        assert_ed25519_ix_matches, expected_reveal_msg, reveal_core, RevealEntry, RevealSignedEntry,
-        MAX_BATCH, TICKET_SEED,
+        assert_ed25519_ix_matches, expected_reveal_msg, init_user_stats_if_needed, reveal_core,
+        RevealEntry, RevealSignedEntry, MAX_BATCH, TICKET_SEED,
     },
     RevealBatch, RevealBatchSigned, RevealTicket,
 };
@@ -100,6 +100,13 @@ pub fn reveal_ticket(
 
     // ✅ counters (solo 1 vez: ya garantizamos !ticket.revealed arriba)
     inc_reveal_counters(round, ticket.win)?;
+
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
     update_streak(&mut ctx.accounts.user_stats, ticket);
 
     Ok(())
@@ -129,6 +136,13 @@ pub fn reveal_batch<'info>(
 
     let user_pk = ctx.accounts.user.key();
     let round_le = round_id.to_le_bytes();
+
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        user_pk,
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
 
     for (i, e) in entries.iter().enumerate() {
         require!(e.guess <= 1, TimlgError::InvalidGuess);
@@ -209,6 +223,13 @@ pub fn reveal_batch_signed<'info>(
         for e in entries.iter() {
             require_keys_eq!(e.user, first.user, TimlgError::SignedBatchMixedUsers);
         }
+
+        init_user_stats_if_needed(
+            &mut ctx.accounts.user_stats,
+            first.user,
+            ctx.bumps.user_stats,
+            current_slot,
+        )?;
     }
 
     let ix_sys = ctx.accounts.instructions.to_account_info();

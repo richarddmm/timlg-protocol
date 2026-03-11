@@ -4,7 +4,7 @@ use anchor_lang::solana_program::{program::invoke_signed, system_instruction};
 use anchor_spl::token::{self, Burn, Transfer, TokenAccount};
 use crate::state::{Ticket, Round};
 use crate::constants::*;
-use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState};
+use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState, utils::init_user_stats_if_needed};
 
 use crate::contexts::{
     SettleRoundTokens, InitializeTokenomics, InitializeRoundRegistry, CreateRoundAuto,
@@ -229,6 +229,13 @@ pub fn settle_round_tokens<'info>(
     let round = &mut ctx.accounts.round;
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     let current_slot = Clock::get()?.slot;
+
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
     require!(
         current_slot > round.reveal_deadline_slot,
         TimlgError::SettleTooEarly
@@ -428,7 +435,6 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     let dest_ai = ctx.accounts.admin.to_account_info();
     let source_ai = round_ai.clone();
     let dest_lamports = dest_ai.lamports();
-    let source_lamports = source_ai.lamports();
     **dest_ai.lamports.borrow_mut() = dest_lamports
         .checked_add(source_lamports)
         .ok_or(TimlgError::MathOverflow)?;
@@ -497,6 +503,14 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
     // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
     ticket.processed = true;
 
+    let current_slot = Clock::get()?.slot;
+
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
     let user_stats = &mut ctx.accounts.user_stats;
     if ticket.created_slot >= user_stats.last_reset_slot {
         user_stats.tickets_refunded = user_stats.tickets_refunded.saturating_add(1);
@@ -514,6 +528,15 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
     // 2. Validate Round & Ticket
     let ticket = &ctx.accounts.ticket;
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
+    
+    let current_slot = Clock::get()?.slot;
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
+
     let user_stats = &mut ctx.accounts.user_stats;
 
     // 3. Logic: When can you close (recover rent)?
@@ -660,6 +683,18 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
 
     // ✅ Fix: Mark as processed
     ticket.processed = true;
+
+    init_user_stats_if_needed(
+        &mut ctx.accounts.user_stats,
+        ctx.accounts.user.key(),
+        ctx.bumps.user_stats,
+        current_slot,
+    )?;
+    
+    let user_stats = &mut ctx.accounts.user_stats;
+    if ticket.created_slot >= user_stats.last_reset_slot {
+        user_stats.tickets_refunded = user_stats.tickets_refunded.saturating_add(1);
+    }
 
     Ok(())
 }

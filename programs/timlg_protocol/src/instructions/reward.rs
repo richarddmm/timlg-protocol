@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, MintTo, Transfer};
 
-use crate::{errors::TimlgError, ClaimReward};
+use crate::{errors::TimlgError, utils::init_user_stats_if_needed, ClaimReward};
 
 pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> Result<()> {
     let cfg = &ctx.accounts.config;
@@ -11,6 +11,8 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     let user_stats = &mut ctx.accounts.user_stats;
 
     let current_slot = Clock::get()?.slot;
+
+    init_user_stats_if_needed(user_stats, ctx.accounts.user.key(), ctx.bumps.user_stats, current_slot)?;
 
     // --- AUTO-FINALIZE lógica ---
     // Si la ronda aún no está finalizada formalmente pero ya venció y tiene pulso...

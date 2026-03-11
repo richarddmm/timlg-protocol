@@ -633,9 +633,11 @@ pub struct RecoverFunds<'info> {
     pub timlg_vault: Account<'info, TokenAccount>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -691,6 +693,15 @@ pub struct RecoverFundsAnyone<'info> {
     )]
     pub timlg_vault: Account<'info, TokenAccount>,
 
+    #[account(
+        init_if_needed,
+        payer = cranker,
+        space = 8 + UserStats::INIT_SPACE,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
     #[account(address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,
 
@@ -728,9 +739,11 @@ pub struct CloseTicket<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -883,11 +896,15 @@ pub struct RevealTicket<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -961,14 +978,16 @@ pub struct RevealBatch<'info> {
     )]
     pub round: Account<'info, Round>,
 
-    pub user: Signer<'info>,
-
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    pub system_program: Program<'info, System>,
 
     // tickets via remaining_accounts (writable)
 }
@@ -1065,11 +1084,15 @@ pub struct RevealBatchSigned<'info> {
     pub user: UncheckedAccount<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = payer,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    pub system_program: Program<'info, System>,
 
     /// CHECK: instruction sysvar (for ed25519 introspection). Address enforced.
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
@@ -1117,9 +1140,11 @@ pub struct ClaimReward<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump = user_stats.bump
+        bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -1136,6 +1161,7 @@ pub struct ClaimReward<'info> {
     pub reward_fee_pool: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
