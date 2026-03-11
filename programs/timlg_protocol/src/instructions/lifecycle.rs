@@ -4,7 +4,7 @@ use anchor_lang::solana_program::{program::invoke_signed, system_instruction};
 use anchor_spl::token::{self, Burn, Transfer, TokenAccount};
 use crate::state::{Ticket, Round};
 use crate::constants::*;
-use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState, init_user_stats_if_needed};
+use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState};
 
 use crate::contexts::{
     SettleRoundTokens, InitializeTokenomics, InitializeRoundRegistry, CreateRoundAuto,
@@ -229,13 +229,6 @@ pub fn settle_round_tokens<'info>(
     let round = &mut ctx.accounts.round;
     require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     let current_slot = Clock::get()?.slot;
-
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
     require!(
         current_slot > round.reveal_deadline_slot,
         TimlgError::SettleTooEarly
@@ -400,7 +393,7 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
              require!(timlg_vault.amount == 0, TimlgError::VaultNotEmpty);
         }
 
-        require!(round.swept, TimlgError::NotSwept);
+        require!(round.swept, TimlgError::AlreadySwept);
         (round.round_id, round.bump)
     };
 
@@ -434,6 +427,7 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     // ✅ Manual Close of the Round PDA: transfer lamports and zero data
     let dest_ai = ctx.accounts.admin.to_account_info();
     let source_ai = round_ai.clone();
+    let source_lamports = source_ai.lamports();
     let dest_lamports = dest_ai.lamports();
     **dest_ai.lamports.borrow_mut() = dest_lamports
         .checked_add(source_lamports)
@@ -497,15 +491,6 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
     // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
     ticket.processed = true;
 
-    let current_slot = Clock::get()?.slot;
-
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
-    
     let user_stats = &mut ctx.accounts.user_stats;
     if ticket.created_slot >= user_stats.last_reset_slot {
         user_stats.tickets_refunded = user_stats.tickets_refunded.saturating_add(1);
@@ -525,12 +510,11 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
     require!(ticket.round_id == round_id, TimlgError::TicketPdaMismatch);
     
     let current_slot = Clock::get()?.slot;
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
+    if ctx.accounts.user_stats.user == Pubkey::default() {
+        ctx.accounts.user_stats.user = ctx.accounts.user.key();
+        ctx.accounts.user_stats.bump = ctx.bumps.user_stats;
+        ctx.accounts.user_stats.last_reset_slot = current_slot;
+    }
     
     let user_stats = &mut ctx.accounts.user_stats;
 
@@ -681,12 +665,11 @@ pub fn recover_funds_anyone(ctx: Context<RecoverFundsAnyone>, round_id: u64) -> 
 
     let current_slot = Clock::get()?.slot;
 
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
+    if ctx.accounts.user_stats.user == Pubkey::default() {
+        ctx.accounts.user_stats.user = ctx.accounts.user.key();
+        ctx.accounts.user_stats.bump = ctx.bumps.user_stats;
+        ctx.accounts.user_stats.last_reset_slot = current_slot;
+    }
     
     let user_stats = &mut ctx.accounts.user_stats;
     if ticket.created_slot >= user_stats.last_reset_slot {
@@ -700,12 +683,8 @@ pub fn close_user_stats(ctx: Context<CloseUserStats>) -> Result<()> {
     let user_stats = &ctx.accounts.user_stats;
     let user = &ctx.accounts.user;
 
-    // Manual PDA verification
-    let (expected_pda, _bump) = Pubkey::find_program_address(
-        &[crate::USER_STATS_SEED, user.key().as_ref()],
-        ctx.program_id,
-    );
-    require_keys_eq!(expected_pda, *user_stats.key, TimlgError::UserStatsPdaMismatch);
+    // Manual PDA verification removed, relying on Context constraints.
+    // The `user_stats.bump` field is now accessed directly from the account.
 
     // Close account: transfer all lamports to user and zero out data
     let dest_lamports = user.lamports();

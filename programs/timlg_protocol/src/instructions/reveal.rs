@@ -7,8 +7,8 @@ use crate::{
     errors::TimlgError,
     state::{Round, Ticket},
     utils::{
-        init_user_stats_if_needed, reveal_core, RevealEntry, RevealSignedEntry,
-        MAX_BATCH, TICKET_SEED,
+        MAX_BATCH, TICKET_SEED, expected_reveal_msg, assert_ed25519_ix_matches, 
+        expected_commit_msg, reveal_core, RevealEntry, RevealSignedEntry
     },
     RevealBatch, RevealBatchSigned, RevealTicket,
 };
@@ -101,13 +101,8 @@ pub fn reveal_ticket(
     // ✅ counters (solo 1 vez: ya garantizamos !ticket.revealed arriba)
     inc_reveal_counters(round, ticket.win)?;
 
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
-    update_streak(&mut ctx.accounts.user_stats, ticket);
+    let user_stats = &mut ctx.accounts.user_stats;
+    update_streak(user_stats, ticket);
 
     Ok(())
 }
@@ -136,13 +131,6 @@ pub fn reveal_batch<'info>(
 
     let user_pk = ctx.accounts.user.key();
     let round_le = round_id.to_le_bytes();
-
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        user_pk,
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
 
     for (i, e) in entries.iter().enumerate() {
         require!(e.guess <= 1, TimlgError::InvalidGuess);
@@ -213,8 +201,6 @@ pub fn reveal_batch_signed<'info>(
     require!(!round.finalized, TimlgError::RoundFinalized);
 
     let current_slot = Clock::get()?.slot;
-
-    require!(round.round_id == round_id, TimlgError::TicketPdaMismatch);
     require!(current_slot <= round.reveal_deadline_slot, TimlgError::RevealClosed);
     require!(round.pulse_set, TimlgError::PulseNotSet);
 
@@ -223,13 +209,6 @@ pub fn reveal_batch_signed<'info>(
         for e in entries.iter() {
             require_keys_eq!(e.user, first.user, TimlgError::SignedBatchMixedUsers);
         }
-
-        init_user_stats_if_needed(
-            &mut ctx.accounts.user_stats,
-            first.user,
-            ctx.bumps.user_stats,
-            current_slot,
-        )?;
     }
 
     let ix_sys = ctx.accounts.instructions.to_account_info();
@@ -257,7 +236,7 @@ pub fn reveal_batch_signed<'info>(
             ctx.program_id,
         );
 
-        let ticket_ai = &ctx.remaining_accounts[i];
+        let ticket_ai: &AccountInfo = &ctx.remaining_accounts[i];
         require_keys_eq!(ticket_ai.key(), expected_ticket_pda, TimlgError::TicketPdaMismatch);
         require_keys_eq!(*ticket_ai.owner, *ctx.program_id, TimlgError::TicketPdaMismatch);
 

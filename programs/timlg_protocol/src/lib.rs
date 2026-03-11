@@ -177,7 +177,7 @@ pub mod timlg_protocol {
     }
 
     pub fn reveal_batch<'info>(
-        ctx: Context<'_, '_, '_, 'info, RevealBatch<'info>>,
+        ctx: Context<'_, '_, 'info, 'info, RevealBatch<'info>>,
         round_id: u64,
         entries: Vec<RevealEntry>,
     ) -> Result<()> {

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, MintTo, Transfer};
 
-use crate::{errors::TimlgError, init_user_stats_if_needed, ClaimReward};
+use crate::{errors::TimlgError, ClaimReward};
 
 pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> Result<()> {
     let cfg = &ctx.accounts.config;
@@ -9,13 +9,6 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     let ticket = &mut ctx.accounts.ticket;
     let tokenomics = &ctx.accounts.tokenomics;
     let current_slot = Clock::get()?.slot;
-
-    init_user_stats_if_needed(
-        &mut ctx.accounts.user_stats,
-        ctx.accounts.user.key(),
-        ctx.bumps.user_stats,
-        current_slot,
-    )?;
 
     let user_stats = &mut ctx.accounts.user_stats;
 

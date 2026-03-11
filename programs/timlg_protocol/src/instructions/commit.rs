@@ -379,7 +379,7 @@ pub fn commit_batch_signed<'info>(
     // --- UserStats ---
     let user_stats = &mut ctx.accounts.user_stats;
     user_stats.user = user_pk;
-    user_stats.bump = ctx.bumps.user_stats;
+    user_stats.bump = user_stats.bump;
 
     if user_stats.last_reset_slot == 0 {
         user_stats.last_reset_slot = current_slot;

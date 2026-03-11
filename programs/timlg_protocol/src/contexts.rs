@@ -633,9 +633,7 @@ pub struct RecoverFunds<'info> {
     pub timlg_vault: Account<'info, TokenAccount>,
 
     #[account(
-        init_if_needed,
-        payer = user,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -896,9 +894,7 @@ pub struct RevealTicket<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        init_if_needed,
-        payer = user,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -934,9 +930,7 @@ pub struct CommitBatch<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        init_if_needed,
-        payer = user,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -978,10 +972,11 @@ pub struct RevealBatch<'info> {
     )]
     pub round: Account<'info, Round>,
 
+    #[account(mut)]
+    pub user: Signer<'info>,
+
     #[account(
-        init_if_needed,
-        payer = user,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
@@ -1020,11 +1015,9 @@ pub struct CommitBatchSigned<'info> {
     pub payer: Signer<'info>,
 
     #[account(
-        init_if_needed,
-        payer = payer,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump
+        bump = user_stats.bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -1084,11 +1077,9 @@ pub struct RevealBatchSigned<'info> {
     pub user: UncheckedAccount<'info>,
 
     #[account(
-        init_if_needed,
-        payer = payer,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
-        bump
+        bump = user_stats.bump
     )]
     pub user_stats: Account<'info, UserStats>,
 
@@ -1140,9 +1131,7 @@ pub struct ClaimReward<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        init_if_needed,
-        payer = user,
-        space = 8 + UserStats::INIT_SPACE,
+        mut,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
