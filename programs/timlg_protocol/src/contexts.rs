@@ -1077,6 +1077,7 @@ pub struct RevealBatchSigned<'info> {
     pub round: Account<'info, Round>,
 
     /// Relayer paying tx fees (must sign tx)
+    #[account(mut)]
     pub payer: Signer<'info>,
 
     /// CHECK: user pubkey referenced in ed25519 msg
@@ -1139,7 +1140,9 @@ pub struct ClaimReward<'info> {
     pub user: Signer<'info>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
+        space = 8 + UserStats::INIT_SPACE,
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
