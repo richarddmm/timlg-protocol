@@ -176,6 +176,8 @@ pub struct UserStats {
     pub tickets_revealed: u64,
     pub tickets_swept: u64,
     pub tickets_claimed: u64,
+    pub tickets_refunded: u64,
+    pub last_reset_slot: u64,
     pub current_streak: u64,
     pub longest_streak: u64,
     pub last_revealed_winning_index: u64,

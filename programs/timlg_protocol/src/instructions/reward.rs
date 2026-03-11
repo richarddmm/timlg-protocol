@@ -121,7 +121,9 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
     ticket.claimed = true;
     ticket.claimed_slot = Clock::get()?.slot;
     
-    user_stats.tickets_claimed = user_stats.tickets_claimed.saturating_add(1);
+    if ticket.created_slot >= user_stats.last_reset_slot {
+        user_stats.tickets_claimed = user_stats.tickets_claimed.saturating_add(1);
+    }
 
     Ok(())
 }

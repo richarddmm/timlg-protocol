@@ -497,6 +497,11 @@ pub fn recover_funds(ctx: Context<RecoverFunds>, round_id: u64) -> Result<()> {
     // ✅ Fix: Mark as processed to prevent double-refund and enable close_ticket
     ticket.processed = true;
 
+    let user_stats = &mut ctx.accounts.user_stats;
+    if ticket.created_slot >= user_stats.last_reset_slot {
+        user_stats.tickets_refunded = user_stats.tickets_refunded.saturating_add(1);
+    }
+
     Ok(())
 }
 
@@ -599,7 +604,9 @@ pub fn close_ticket(ctx: Context<CloseTicket>, round_id: u64, _nonce: u64) -> Re
         // Count as swept ONLY if the ticket was a winner but wasn't claimed.
         // Expired and Loss tickets just die here (reclaiming rent is silent).
         if ticket.win && !ticket.claimed && !is_refund_mode {
-            user_stats.tickets_swept = user_stats.tickets_swept.saturating_add(1);
+            if ticket.created_slot >= user_stats.last_reset_slot {
+                user_stats.tickets_swept = user_stats.tickets_swept.saturating_add(1);
+            }
         }
     } else {
         // If round is dead (deleted/archived), allow closing any ticket to reclaim rent.

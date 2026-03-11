@@ -14,6 +14,10 @@ use crate::{
 };
 
 pub fn update_streak(user_stats: &mut crate::state::UserStats, ticket: &Ticket) {
+    if ticket.created_slot < user_stats.last_reset_slot {
+        return;
+    }
+
     user_stats.tickets_revealed = user_stats.tickets_revealed.saturating_add(1);
 
     if ticket.win {

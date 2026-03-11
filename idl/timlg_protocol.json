@@ -542,6 +542,61 @@
       ]
     },
     {
+      "name": "close_user_stats",
+      "discriminator": [
+        179,
+        188,
+        173,
+        6,
+        6,
+        208,
+        32,
+        211
+      ],
+      "accounts": [
+        {
+          "name": "user_stats",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  115,
+                  95,
+                  118,
+                  51
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "commit_batch",
       "discriminator": [
         27,

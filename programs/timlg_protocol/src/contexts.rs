@@ -632,6 +632,13 @@ pub struct RecoverFunds<'info> {
     )]
     pub timlg_vault: Account<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
+        bump = user_stats.bump
+    )]
+    pub user_stats: Account<'info, UserStats>,
+
     #[account(address = config.timlg_mint)]
     pub timlg_mint: Account<'info, Mint>,
 

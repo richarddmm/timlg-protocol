@@ -65,6 +65,11 @@ pub fn commit_ticket(
     let user_stats = &mut ctx.accounts.user_stats;
     user_stats.user = ctx.accounts.user.key();
     user_stats.bump = ctx.bumps.user_stats;
+
+    // Initialize last_reset_slot if newly created or reset
+    if user_stats.last_reset_slot == 0 {
+        user_stats.last_reset_slot = current_slot;
+    }
     
     // Asignamos índice a este ticket
     let user_commit_index = user_stats.games_played.checked_add(1).ok_or(TimlgError::MathOverflow)?;
@@ -169,6 +174,10 @@ pub fn commit_batch<'info>(
     let user_stats = &mut ctx.accounts.user_stats;
     user_stats.user = ctx.accounts.user.key();
     user_stats.bump = ctx.bumps.user_stats;
+
+    if user_stats.last_reset_slot == 0 {
+        user_stats.last_reset_slot = current_slot;
+    }
 
     // --- crear tickets (PDA accounts) ---
     let user_pk = ctx.accounts.user.key();
@@ -372,6 +381,10 @@ pub fn commit_batch_signed<'info>(
     let user_stats = &mut ctx.accounts.user_stats;
     user_stats.user = user_pk;
     user_stats.bump = ctx.bumps.user_stats;
+
+    if user_stats.last_reset_slot == 0 {
+        user_stats.last_reset_slot = current_slot;
+    }
 
     // --- create ticket PDA accounts (payer = relayer/payer) ---
     let payer_pk = ctx.accounts.payer.key();
