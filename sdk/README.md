@@ -1,49 +1,76 @@
-# TIMLG TypeScript SDK 🚀
+# TIMLG Protocol TypeScript SDK
 
-The official TypeScript SDK for interacting with the **TIMLG Protocol** on Solana. This SDK abstracts the complexity of PDA derivations and cryptographic commitments, allowing you to focus on building.
+SDK profesional para interactuar con el protocolo TIMLG en Solana. Diseñado para ser modular, seguro y fácil de usar tanto por jugadores como por operadores de infraestructura.
 
-## Installation
+## Instalación
 
 ```bash
-npm install @solana/web3.js @coral-xyz/anchor @noble/hashes bs58
+npm install @timlg/sdk
 ```
 
-*(Note: Currently in beta, available via direct file inclusion or local linking)*
+## Estructura Modular (Roles)
 
-## Quickstart
+El SDK se divide en tres herramientas principales dependiendo de tu rol en el protocolo:
 
+### 1. TimlgPlayer (Para Usuarios y Bots de Juego)
+Ideal para crear gestores de tickets o aplicaciones de usuario.
 ```typescript
-import * as anchor from "@coral-xyz/anchor";
-import { TimlgClient } from "./sdk/src/index.js";
+import { TimlgPlayer } from '@timlg/sdk';
 
-// Initialize Provider
-const provider = anchor.AnchorProvider.env();
-const programId = new PublicKey("GeA3JqAjAWBCoW3JVDbdTjEoxfUaSgtHuxiAeGG5PrUP");
-const program = new anchor.Program(idl as any, provider);
+const player = new TimlgPlayer(program); // program es un anchor.Program
 
-const client = new TimlgClient(program);
-
-// Commit a guess (1 = Bull, 0 = Bear)
-const roundId = 100;
-const guess = 1;
-const { signature, receipt } = await client.commit(roundId, guess, {
-    timlgMint: TIMLG_MINT_PUBKEY,
-    userTimlgAta: USER_ATA
+// Apostar en una ronda
+const { signature, receipt } = await player.commit(roundId, guess, {
+  timlgMint,
+  userTimlgAta
 });
 
-console.log("Committed! Receipt:", receipt);
+// Revelar (después de que cierre el commit)
+await player.reveal(receipt);
 
-// Reveal later
-const revealSig = await client.reveal(receipt);
+// Cobrar premios
+await player.claim(receipt, { timlgMint, userTimlgAta });
+
+// Cerrar cuenta de ticket (recuperar SOL de renta)
+await player.closeTicket(receipt);
 ```
 
-## Features
+### 2. TimlgSupervisor (Para Operadores de Rondas)
+Herramienta para mantener el flujo del protocolo.
+```typescript
+import { TimlgSupervisor } from '@timlg/sdk';
 
-- **Type-safe interaction** with TIMLG smart contracts.
-- **Deterministic PDA derivation** for Rounds, Tickets, and Vaults.
-- **Commit-Reveal logic** built-in with standard SHA256 hashing.
-- **Full ESM compatibility**.
+const supervisor = new TimlgSupervisor(program);
 
-## License
+// Abrir nueva ronda automáticamente
+await supervisor.createRoundAuto();
 
-MIT
+// Finalizar ventana de apuestas
+await supervisor.finalizeRound(roundId);
+
+// Liquidar premios
+await supervisor.settleRoundTokens(roundId, { timlgMint });
+```
+
+### 3. TimlgAdmin (Para Gestión del Protocolo)
+Control total del sistema (requiere permisos de administrador).
+```typescript
+import { TimlgAdmin } from '@timlg/sdk';
+
+const admin = new TimlgAdmin(program);
+
+await admin.setPause(true); // Pausa de emergencia
+await admin.addOracle(newPublicKey); // Gestión de oráculos
+```
+
+## Consultas Comunes
+Todas las herramientas incluyen métodos para leer datos del protocolo:
+```typescript
+const round = await player.fetchRound(roundId);
+const stats = await player.fetchUserStats(userPublicKey);
+const config = await player.fetchConfig();
+```
+
+## Verificación
+El código está diseñado para ser compatible con entornos ESM y NodeNext.
+© 2026 TIMLG Protocol.
