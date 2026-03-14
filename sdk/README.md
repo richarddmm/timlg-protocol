@@ -8,6 +8,12 @@ SDK profesional para interactuar con el protocolo TIMLG en Solana. Diseñado par
 npm install @timlg/sdk
 ```
 
+## Guía Rápida y Ejemplos
+
+Para ver implementaciones completas y profesionales, consulta nuestra carpeta de [examples/](https://github.com/richarddmm/timlg-protocol/tree/main/sdk/examples):
+- **`player_demo.ts`**: Ciclo completo de juego (Apostar -> Revelar -> Cobrar).
+- **`operator_demo.ts`**: Gestión automatizada de rondas para operadores.
+
 ## Estructura Modular (Roles)
 
 El SDK se divide en tres herramientas principales dependiendo de tu rol en el protocolo:
