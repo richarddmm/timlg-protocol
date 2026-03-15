@@ -12,7 +12,7 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
-import { TimlgClient } from "../sdk/dist/index.js";
+import { TimlgClient } from "../dist/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HISTORY_FILE = path.join(__dirname, "ticket_history.json");
