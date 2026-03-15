@@ -100,7 +100,7 @@ async function main() {
 
   if (daemonSeconds) {
     const ms = parseInt(daemonSeconds) * 1000;
-    console.log(`🔄 Running every ${daemonSeconds}s`);
+    console.log(`Running every ${daemonSeconds}s`);
     await runActions();
     setInterval(runActions, ms);
   } else {
@@ -123,7 +123,10 @@ async function handleCommit(player, intensity, user) {
   const history = loadHistory();
   const userAddr = user.toBase58();
   
-  if (history.find(t => t.roundId === roundId && t.status === "pending" && t.user === userAddr)) return;
+  if (history.find(t => t.roundId === roundId && t.status === "pending" && t.user === userAddr)) {
+    console.log(`Commit: (Already pending for Round ${roundId})`);
+    return;
+  }
 
   const count = intensity === "high" ? 5 : 1;
   const entries = Array.from({ length: count }, () => ({
@@ -132,10 +135,12 @@ async function handleCommit(player, intensity, user) {
 
   try {
     const { signature, receipts } = await player.commitBatch(roundId, entries, { timlgMint: TIMLG_MINT });
-    console.log(`Commit: Round ${roundId} | ${receipts.length} ticket(s) OK`);
+    console.log(`Commit:`);
+    console.log(`  Round ${roundId} | ${receipts.length} ticket(s) OK`);
     saveToHistory(receipts, userAddr);
   } catch (e) {
-    console.log(`Commit: Round ${roundId} | ⚠️  Failed (${formatError(e.message)})`);
+    console.log(`Commit:`);
+    console.log(`  Round ${roundId} | ⚠️  Failed (${formatError(e.message)})`);
   }
 }
 
@@ -149,11 +154,13 @@ async function handleReveal(player, user) {
   }
 
   const rounds = [...new Set(pending.map(t => t.roundId))];
+  let waitingRounds = 0;
+  let hasActions = false;
 
   for (const rid of rounds) {
     const ticketsInRound = pending.filter(t => t.roundId === rid);
     
-    // 1. Sync check: Maybe they were already revealed in a previous run?
+    // 1. Sync check
     let revealedOnChain = 0;
     for (const t of ticketsInRound) {
       try {
@@ -164,39 +171,52 @@ async function handleReveal(player, user) {
         }
       } catch (_) {}
     }
-    if (revealedOnChain > 0) {
-      console.log(`🔓 Round ${rid}: 🔄 Synced ${revealedOnChain} revealed ticket(s) from chain`);
-    }
 
     // 2. Filter out what was just synced
     const stillPending = ticketsInRound.filter(t => t.status === "pending");
-    if (stillPending.length === 0) continue;
-
-      try {
-        const roundAcc = await player.fetchRound(parseInt(rid));
-        if (!roundAcc.pulseSet) {
-          console.log(`Reveal: Round ${rid} | ⏳ Waiting for pulse`);
-          continue;
-        }
-        if (roundAcc.finalized) {
-          console.log(`Reveal: Round ${rid} | ℹ️  Round finalized (Expired)`);
-          stillPending.forEach(t => t.status = "expired");
-          continue;
-        }
-
-        await player.revealBatch(stillPending);
-        console.log(`Reveal: Round ${rid} | ✅ ${stillPending.length} ticket(s) revealed`);
-        stillPending.forEach(t => t.status = "revealed");
-      } catch (e) {
-        const msg = formatError(e.message);
-        if (msg.includes("AccountNotInitialized") || msg.includes("already initialized")) {
-            console.log(`Reveal: Round ${rid} | ℹ️  Round purged or closed`);
-            stillPending.forEach(t => t.status = "expired");
-        } else {
-            console.log(`Reveal: Round ${rid} | ⚠️  Failed (${msg})`);
-        }
+    if (stillPending.length === 0) {
+      if (revealedOnChain > 0) {
+        if (!hasActions) { console.log("Reveal:"); hasActions = true; }
+        console.log(`  Round ${rid}: Synced ${revealedOnChain} revealed ticket(s) from chain`);
       }
+      continue;
+    }
+
+    try {
+      const roundAcc = await player.fetchRound(parseInt(rid));
+      if (!roundAcc.pulseSet) {
+        waitingRounds++;
+        continue;
+      }
+      if (roundAcc.finalized) {
+        if (!hasActions) { console.log("Reveal:"); hasActions = true; }
+        console.log(`  Round ${rid} | ℹ️  Round finalized (Expired)`);
+        stillPending.forEach(t => t.status = "expired");
+        continue;
+      }
+
+      await player.revealBatch(stillPending);
+      if (!hasActions) { console.log("Reveal:"); hasActions = true; }
+      console.log(`  Round ${rid} | ✅ ${stillPending.length} ticket(s) revealed`);
+      stillPending.forEach(t => t.status = "revealed");
+    } catch (e) {
+      const msg = formatError(e.message);
+      if (!hasActions) { console.log("Reveal:"); hasActions = true; }
+      if (msg.includes("AccountNotInitialized") || msg.includes("already initialized")) {
+        console.log(`  Round ${rid} | ℹ️  Round purged or closed`);
+        stillPending.forEach(t => t.status = "expired");
+      } else {
+        console.log(`  Round ${rid} | ⚠️  Failed (${msg})`);
+      }
+    }
     updateHistory(history);
+  }
+  
+  if (waitingRounds > 0) {
+    if (hasActions) console.log(`  (Waiting for pulse in ${waitingRounds} rounds)`);
+    else console.log(`Reveal: (Waiting for pulse in ${waitingRounds} rounds)`);
+  } else if (!hasActions) {
+    console.log(`Reveal: (No pending tickets)`);
   }
 }
 
@@ -205,14 +225,19 @@ async function handleClaim(player, user) {
   const history = loadHistory();
   const revealed = history.filter(t => t.status === "revealed" && t.user === userAddr);
   if (revealed.length === 0) {
-    console.log(`Claim: (No revealed tickets)`);
+    console.log(`Claim: (No revealed tickets to check)`);
     return;
   }
 
   const rounds = [...new Set(revealed.map(t => t.roundId))];
+  let waitingFinalization = 0;
+  let hasActions = false;
+  
   for (const rid of rounds) {
     const ticketsInRound = revealed.filter(t => t.roundId === rid);
     let wins = 0;
+    let isWaiting = false;
+
     for (const t of ticketsInRound) {
       try {
         await player.claim(t, { timlgMint: TIMLG_MINT });
@@ -220,7 +245,10 @@ async function handleClaim(player, user) {
         wins++;
       } catch (e) {
           const msg = formatError(e.message);
-          if (msg.includes("RoundNotFinalized") || msg.includes("settled")) break;
+          if (msg.includes("RoundNotFinalized") || msg.includes("settled")) {
+            isWaiting = true;
+            break;
+          }
           if (msg.includes("NotWinner") || msg.includes("not a winner")) {
             t.status = "revealed-loss";
           } else if (msg.includes("AccountNotInitialized")) {
@@ -228,8 +256,19 @@ async function handleClaim(player, user) {
           }
       }
     }
-    if (wins > 0) console.log(`Claim: Round ${rid} | 💰 ${wins} prize(s) collected`);
+    if (wins > 0) {
+      if (!hasActions) { console.log("Claim:"); hasActions = true; }
+      console.log(`  Round ${rid} | ${wins} prize(s) collected`);
+    }
+    if (isWaiting) waitingFinalization++;
     updateHistory(history);
+  }
+  
+  if (waitingFinalization > 0) {
+    if (hasActions) console.log(`  (Waiting for finalization in ${waitingFinalization} rounds)`);
+    else console.log(`Claim: (Waiting for finalization in ${waitingFinalization} rounds)`);
+  } else if (!hasActions) {
+    console.log(`Claim: (No prizes to claim)`);
   }
 }
 
@@ -243,6 +282,9 @@ async function handleRefund(player, user) {
   }
 
   const rounds = [...new Set(pending.map(t => t.roundId))];
+  let tooEarly = 0;
+  let hasActions = false;
+
   for (const rid of rounds) {
     const ticketsInRound = pending.filter(t => t.roundId === rid);
     try {
@@ -250,14 +292,29 @@ async function handleRefund(player, user) {
           timlgMint: TIMLG_MINT,
           ticketPda: new PublicKey(ticketsInRound[0].ticketPda)
         });
-        console.log(`Refund: Round ${rid} | ✅ ${ticketsInRound.length} ticket(s) OK`);
+        if (!hasActions) { console.log("Refund:"); hasActions = true; }
+        console.log(`  Round ${rid} | ✅ ${ticketsInRound.length} ticket(s) OK`);
         ticketsInRound.forEach(t => t.status = "refunded");
     } catch (e) {
         const msg = formatError(e.message);
-        if (msg.includes("RefundTooEarly")) continue;
-        if (msg.includes("AccountNotInitialized")) ticketsInRound.forEach(t => t.status = "lost");
+        if (msg.includes("RefundTooEarly")) {
+          tooEarly++;
+          continue;
+        }
+        if (msg.includes("AccountNotInitialized")) {
+          if (!hasActions) { console.log("Refund:"); hasActions = true; }
+          console.log(`  Round ${rid} | ℹ️  Account lost/purged`);
+          ticketsInRound.forEach(t => t.status = "lost");
+        }
     }
     updateHistory(history);
+  }
+  
+  if (tooEarly > 0) {
+    if (hasActions) console.log(`  (Waiting for refund window in ${tooEarly} rounds)`);
+    else console.log(`Refund: (Waiting for refund window in ${tooEarly} rounds)`);
+  } else if (!hasActions) {
+    console.log(`Refund: (No tickets to refund)`);
   }
 }
 
@@ -271,6 +328,7 @@ async function handleClose(player, user) {
   }
 
   const rounds = [...new Set(closable.map(t => t.roundId))];
+  let hasActions = false;
   for (const rid of rounds) {
     const ticketsInRound = closable.filter(t => t.roundId === rid);
     let closed = 0;
@@ -286,22 +344,29 @@ async function handleClose(player, user) {
         }
       }
     }
-    if (closed > 0) console.log(`Recover: Round ${rid} | 🔄 Rent recovered (${closed} tickets)`);
+    if (closed > 0) {
+      if (!hasActions) { console.log("Recover:"); hasActions = true; }
+      console.log(`  Round ${rid} | Rent recovered (${closed} tickets)`);
+    }
     updateHistory(history);
+  }
+  
+  if (!hasActions) {
+    console.log(`Recover: (No accounts to close)`);
   }
 }
 
 async function handleStats(player, user) {
   try {
     const { sol, tmlg } = await player.getBalances(user, TIMLG_MINT);
-    console.log(`💰 Balance: ${sol.toFixed(3)} SOL | ${tmlg} TMLG`);
+    console.log(`Balance: ${sol.toFixed(3)} SOL | ${tmlg} TMLG`);
 
     let stats;
     try {
       stats = await player.fetchUserStats(user);
     } catch (e) {
       // Account doesn't exist (reset or never played)
-      console.log(`\n-- Status [Streak: 0 🔥 | Record: 0] --`);
+      console.log(`\n-- Status [Streak: 0 | Record: 0] --`);
       console.log(`[Commits] Total: 0 | Pending: 0 | Revealed: 0 | Refunded: 0 | Expired: 0`);
       console.log(`[Results] Won: 0 (Claimed: 0 | Unclaimed: 0 | Swept: 0) | Lost: 0`);
       return;
@@ -325,7 +390,7 @@ async function handleStats(player, user) {
     const pending = Math.min(localPending, unresolved);
     const expired = unresolved - pending;
 
-    console.log(`\n-- Status [Streak: ${stats.currentStreak} 🔥 | Record: ${stats.longestStreak}] --`);
+    console.log(`\n-- Status [Streak: ${stats.currentStreak} | Record: ${stats.longestStreak}] --`);
     console.log(`[Commits] Total: ${stats.gamesPlayed} | Pending: ${pending} | Revealed: ${revealed} | Refunded: ${refunded} | Expired: ${expired}`);
     console.log(`[Results] Won: ${won} (Claimed: ${claimed} | Unclaimed: ${unclaimed} | Swept: ${swept}) | Lost: ${stats.gamesLost}`);
   } catch (e) {
