@@ -1,82 +1,84 @@
 # TIMLG Protocol TypeScript SDK
 
-SDK profesional para interactuar con el protocolo TIMLG en Solana. Diseñado para ser modular, seguro y fácil de usar tanto por jugadores como por operadores de infraestructura.
+Professional SDK for interacting with the TIMLG Protocol on Solana. Designed to be modular, secure, and easy to use for both players and infrastructure operators.
 
-## Instalación
+## Installation
 
 ```bash
 npm install @timlg/sdk
 ```
 
-## Guía Rápida y Ejemplos
+## Quick Start & Examples
 
-Para ver implementaciones completas y profesionales, consulta nuestra carpeta de [examples/](https://github.com/richarddmm/timlg-protocol/tree/main/sdk/examples):
-- **`player_demo.ts`**: Ciclo completo de juego (Apostar -> Revelar -> Cobrar).
-- **`operator_demo.ts`**: Gestión automatizada de rondas para operadores.
+For complete, professional implementations, check our [examples/](https://github.com/richarddmm/timlg-protocol/tree/main/sdk/examples) directory:
+- **`player_demo.ts`**: Complete game cycle (Commit -> Reveal -> Claim).
+- **`operator_demo.ts`**: Automated round management for operators.
 
-## Estructura Modular (Roles)
+## Modular Architecture (Roles)
 
-El SDK se divide en tres herramientas principales dependiendo de tu rol en el protocolo:
+The SDK is divided into three primary tools depending on your protocol role:
 
-### 1. TimlgPlayer (Para Usuarios y Bots de Juego)
-Ideal para crear gestores de tickets o aplicaciones de usuario.
+### 1. TimlgPlayer (For Users & Game Bots)
+Ideal for creating ticket managers or user-facing applications.
 ```typescript
-import { TimlgPlayer } from '@timlg/sdk';
+import { TimlgClient } from '@timlg/sdk';
 
-const player = new TimlgPlayer(program); // program es un anchor.Program
+// Initialize in one line!
+const client = await TimlgClient.create(wallet, { cluster: 'devnet' });
+const player = client.player;
 
-// Apostar en una ronda
+// Commit a bet in a round
 const { signature, receipt } = await player.commit(roundId, guess, {
   timlgMint,
   userTimlgAta
 });
 
-// Revelar (después de que cierre el commit)
+// Reveal the ticket (after commit window closes)
 await player.reveal(receipt);
 
-// Cobrar premios
+// Claim rewards for winning tickets
 await player.claim(receipt, { timlgMint, userTimlgAta });
 
-// Cerrar cuenta de ticket (recuperar SOL de renta)
+// Close ticket account (recover SOL rent)
 await player.closeTicket(receipt);
 ```
 
-### 2. TimlgSupervisor (Para Operadores de Rondas)
-Herramienta para mantener el flujo del protocolo.
+### 2. TimlgSupervisor (For Round Operators)
+Tools for maintaining the protocol's game flow.
 ```typescript
 import { TimlgSupervisor } from '@timlg/sdk';
 
 const supervisor = new TimlgSupervisor(program);
 
-// Abrir nueva ronda automáticamente
+// Create a new round automatically
 await supervisor.createRoundAuto();
 
-// Finalizar ventana de apuestas
+// Finalize betting window
 await supervisor.finalizeRound(roundId);
 
-// Liquidar premios
+// Settle and distribute rewards
 await supervisor.settleRoundTokens(roundId, { timlgMint });
 ```
 
-### 3. TimlgAdmin (Para Gestión del Protocolo)
-Control total del sistema (requiere permisos de administrador).
+### 3. TimlgAdmin (For Protocol Governance)
+Full system control (requires administrative permissions).
 ```typescript
 import { TimlgAdmin } from '@timlg/sdk';
 
 const admin = new TimlgAdmin(program);
 
-await admin.setPause(true); // Pausa de emergencia
-await admin.addOracle(newPublicKey); // Gestión de oráculos
+await admin.setPause(true); // Emergency pause
+await admin.addOracle(newOracleKey); // Oracle management
 ```
 
-## Consultas Comunes
-Todas las herramientas incluyen métodos para leer datos del protocolo:
+## Common Queries
+All tools include methods for reading protocol state:
 ```typescript
 const round = await player.fetchRound(roundId);
 const stats = await player.fetchUserStats(userPublicKey);
 const config = await player.fetchConfig();
 ```
 
-## Verificación
-El código está diseñado para ser compatible con entornos ESM y NodeNext.
+## Development
+The code is designed to be compatible with ESM and NodeNext environments.
 © 2026 TIMLG Protocol.

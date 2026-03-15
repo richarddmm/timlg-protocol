@@ -26,7 +26,9 @@ export function randomBytes32(): Uint8Array {
 
 /**
  * Computes the commitment hash for a ticket.
- * Standard TIMLG Commit-Reveal hash: sha256(round_id || user_pubkey || nonce || guess || salt)
+ * Must exactly match the Rust `commit_hash` in utils.rs:
+ *   hashv(&[b"commit", round_id.to_le_bytes(), user, nonce.to_le_bytes(), &[guess], salt])
+ * Solana's hashv is SHA256 over a single flattened byte-slice of all the parts concatenated.
  */
 export async function computeCommitment(
   roundId: number | bigint,
@@ -44,7 +46,9 @@ export async function computeCommitment(
   const guessBuffer = Buffer.alloc(1);
   guessBuffer.writeUint8(guess);
 
+  // Prefix with b"commit" to match Rust's hashv first slice
   const data = Buffer.concat([
+    Buffer.from("commit"),
     roundIdBuffer,
     user.toBuffer(),
     nonceBuffer,
