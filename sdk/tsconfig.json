@@ -42,5 +42,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["examples", "src/test"]
+  "exclude": ["examples", "src/test", "dist"],
+  "include": ["src"]
 }

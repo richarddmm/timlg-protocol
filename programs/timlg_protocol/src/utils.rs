@@ -46,6 +46,8 @@ pub const TOKENOMICS_SEED: &[u8] = b"tokenomics_v3";
 pub const REWARD_FEE_POOL_SEED: &[u8] = b"reward_fee_pool_v3";
 pub const REPLICATION_POOL_SEED: &[u8] = b"replication_pool_v3";
 
+pub const GLOBAL_STATS_SEED: &[u8] = b"global_stats_v3";
+
 
 // ---------------
 // Batch payloads

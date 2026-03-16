@@ -44,11 +44,14 @@ pub fn update_streak(user_stats: &mut crate::state::UserStats, ticket: &Ticket) 
 }
 
 #[inline(always)]
-fn inc_reveal_counters(round: &mut Round, did_win: bool) -> Result<()> {
+fn inc_reveal_counters(round: &mut Round, gs: &mut crate::state::GlobalStats, did_win: bool) -> Result<()> {
     round.revealed_count = round
         .revealed_count
         .checked_add(1)
         .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+    // global stats
+    gs.total_reveals = gs.total_reveals.checked_add(1).ok_or(TimlgError::MathOverflow)?;
 
     if did_win {
         round.win_count = round
@@ -60,6 +63,9 @@ fn inc_reveal_counters(round: &mut Round, did_win: bool) -> Result<()> {
             .win_revealed_count
             .checked_add(1)
             .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+        // global stats
+        gs.total_wins = gs.total_wins.checked_add(1).ok_or(TimlgError::MathOverflow)?;
     }
     Ok(())
 }
@@ -99,7 +105,7 @@ pub fn reveal_ticket(
     )?;
 
     // ✅ counters (solo 1 vez: ya garantizamos !ticket.revealed arriba)
-    inc_reveal_counters(round, ticket.win)?;
+    inc_reveal_counters(round, &mut ctx.accounts.global_stats, ticket.win)?;
 
     let user_stats = &mut ctx.accounts.user_stats;
     update_streak(user_stats, ticket);
@@ -169,7 +175,7 @@ pub fn reveal_batch<'info>(
         )?;
 
         // ✅ counters por ticket revelado
-        inc_reveal_counters(round, ticket.win)?;
+        inc_reveal_counters(round, &mut ctx.accounts.global_stats, ticket.win)?;
         update_streak(&mut ctx.accounts.user_stats, &ticket);
 
         // persist ticket
@@ -264,7 +270,7 @@ pub fn reveal_batch_signed<'info>(
             current_slot,
         )?;
 
-        inc_reveal_counters(round, ticket.win)?;
+        inc_reveal_counters(round, &mut ctx.accounts.global_stats, ticket.win)?;
         update_streak(&mut ctx.accounts.user_stats, &ticket);
 
         let mut w = std::io::Cursor::new(&mut data[..]);

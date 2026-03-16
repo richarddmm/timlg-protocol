@@ -185,6 +185,19 @@ pub struct UserStats {
 
 #[account]
 #[derive(InitSpace)]
+pub struct GlobalStats {
+    pub bump: u8,
+    pub total_tickets: u64,
+    pub total_reveals: u64,
+    pub total_wins: u64,
+    pub total_sol_fees: u64,
+    pub total_timlg_burned: u64,
+    pub total_timlg_minted: u64,
+    pub total_rounds_closed: u64,
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct Tokenomics {
     pub admin: Pubkey,
     pub bump: u8,

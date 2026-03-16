@@ -329,6 +329,10 @@ pub fn settle_round_tokens<'info>(
             ),
             total_to_burn,
         )?;
+
+        // global stats
+        let gs = &mut ctx.accounts.global_stats;
+        gs.total_timlg_burned = gs.total_timlg_burned.checked_add(total_to_burn).ok_or(TimlgError::MathOverflow)?;
     }
 
     // Removed transfer to replication_pool (MVP-3.2)
@@ -436,6 +440,10 @@ pub fn close_round(ctx: Context<CloseRound>, round_id: u64) -> Result<()> {
     
     // Zero out data to prevent any re-use
     source_ai.data.borrow_mut().fill(0);
+
+    // global stats
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_rounds_closed = gs.total_rounds_closed.checked_add(1).ok_or(TimlgError::MathOverflow)?;
     
     Ok(())
 }

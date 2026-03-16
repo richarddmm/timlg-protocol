@@ -120,3 +120,30 @@ export function getPdaUserStats(programId: PublicKey, user: PublicKey): PublicKe
   );
   return pda;
 }
+
+/**
+ * Derives the Replication Pool PDA.
+ */
+export function getPdaReplicationPool(programId: PublicKey, tokenomicsPda: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("replication_pool_v3"), tokenomicsPda.toBuffer()],
+    programId
+  );
+  return pda;
+}
+
+/**
+ * Derives the GlobalStats PDA.
+ */
+export function getPdaGlobalStats(programId: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync([Buffer.from("global_stats_v3")], programId);
+  return pda;
+}
+
+/**
+ * Derives the Treasury PDA (SPL).
+ */
+export function getPdaTreasury(programId: PublicKey): PublicKey {
+  const [pda] = PublicKey.findProgramAddressSync([Buffer.from("treasury_v3")], programId);
+  return pda;
+}

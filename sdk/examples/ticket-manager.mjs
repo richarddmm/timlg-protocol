@@ -361,6 +361,17 @@ async function handleStats(player, user) {
     const { sol, tmlg } = await player.getBalances(user, TIMLG_MINT);
     console.log(`Balance: ${sol.toFixed(3)} SOL | ${tmlg} TMLG`);
 
+    try {
+      const globalStats = await player.fetchGlobalStats();
+      console.log(`\n-- Protocol Global Stats --`);
+      console.log(`[Tickets] Total: ${globalStats.totalTickets} | Reveals: ${globalStats.totalReveals} | Wins: ${globalStats.totalWins}`);
+      console.log(`[Flow] Minted: ${globalStats.totalTimlgMinted} | Burned: ${globalStats.totalTimlgBurned} | Closed Rounds: ${globalStats.totalRoundsClosed}`);
+      console.log(`[Fees] Total SOL Fees: ${(globalStats.totalSolFees.toNumber() / 1e9).toFixed(6)} SOL`);
+    } catch (e) {
+      // console.log(e);
+      console.log("\n-- Global Stats not yet initialized --");
+    }
+
     let stats;
     try {
       stats = await player.fetchUserStats(user);

@@ -3,7 +3,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
-use crate::state::{Config, OracleSet, Round, RoundRegistry, Ticket, UserEscrow, Tokenomics, UserStats};
+use crate::state::{Config, OracleSet, Round, RoundRegistry, Ticket, UserEscrow, Tokenomics, UserStats, GlobalStats};
 
 #[derive(Accounts)]
 pub struct InitializeTokenomics<'info> {
@@ -71,6 +71,31 @@ pub struct InitializeRoundRegistry<'info> {
         bump
     )]
     pub round_registry: Account<'info, RoundRegistry>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct InitializeGlobalStats<'info> {
+    #[account(
+        mut,
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump,
+    )]
+    pub config: Account<'info, Config>,
+
+    #[account(
+        init,
+        payer = admin,
+        space = 8 + GlobalStats::INIT_SPACE,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
 
     #[account(mut)]
     pub admin: Signer<'info>,
@@ -858,6 +883,13 @@ pub struct CommitTicket<'info> {
     /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -899,6 +931,13 @@ pub struct RevealTicket<'info> {
         bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
 
     pub system_program: Program<'info, System>,
 }
@@ -954,6 +993,13 @@ pub struct CommitBatch<'info> {
     /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -985,6 +1031,13 @@ pub struct RevealBatch<'info> {
         bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
 
     pub system_program: Program<'info, System>,
 
@@ -1056,6 +1109,13 @@ pub struct CommitBatchSigned<'info> {
     /// CHECK: Treasury SOL PDA
     pub treasury_sol: UncheckedAccount<'info>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -1091,6 +1151,13 @@ pub struct RevealBatchSigned<'info> {
         bump
     )]
     pub user_stats: Account<'info, UserStats>,
+
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
 
     pub system_program: Program<'info, System>,
 
@@ -1160,6 +1227,13 @@ pub struct ClaimReward<'info> {
     #[account(mut, address = tokenomics.reward_fee_pool)]
     pub reward_fee_pool: Account<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -1203,6 +1277,13 @@ pub struct SettleRoundTokens<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
+
     pub token_program: Program<'info, Token>,
 }
 
@@ -1232,6 +1313,13 @@ pub struct CloseRound<'info> {
 
     #[account(mut)]
     pub admin: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.bump,
+    )]
+    pub global_stats: Account<'info, GlobalStats>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

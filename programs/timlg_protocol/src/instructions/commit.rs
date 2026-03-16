@@ -103,10 +103,12 @@ pub fn commit_ticket(
     ticket.user_commit_index = user_commit_index;
 
     // counters
-    round.committed_count = round
-        .committed_count
-        .checked_add(1)
         .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+    // global stats
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_tickets = gs.total_tickets.checked_add(1).ok_or(TimlgError::MathOverflow)?;
+    gs.total_sol_fees = gs.total_sol_fees.checked_add(cfg.sol_service_fee_lamports).ok_or(TimlgError::MathOverflow)?;
 
     Ok(())
 }
@@ -266,6 +268,17 @@ pub fn commit_batch<'info>(
         .committed_count
         .checked_add(n)
         .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+    // global stats
+    let total_sol_fee = if cfg.sol_service_fee_lamports > 0 {
+        cfg.sol_service_fee_lamports.checked_mul(n).ok_or(TimlgError::MathOverflow)?
+    } else {
+        0
+    };
+
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_tickets = gs.total_tickets.checked_add(n).ok_or(TimlgError::MathOverflow)?;
+    gs.total_sol_fees = gs.total_sol_fees.checked_add(total_sol_fee).ok_or(TimlgError::MathOverflow)?;
 
     Ok(())
 }
@@ -469,6 +482,17 @@ pub fn commit_batch_signed<'info>(
         .committed_count
         .checked_add(n)
         .ok_or_else(|| error!(TimlgError::MathOverflow))?;
+
+    // global stats
+    let total_sol_fee = if cfg.sol_service_fee_lamports > 0 {
+        cfg.sol_service_fee_lamports.checked_mul(n).ok_or(TimlgError::MathOverflow)?
+    } else {
+        0
+    };
+
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_tickets = gs.total_tickets.checked_add(n).ok_or(TimlgError::MathOverflow)?;
+    gs.total_sol_fees = gs.total_sol_fees.checked_add(total_sol_fee).ok_or(TimlgError::MathOverflow)?;
 
     Ok(())
 }

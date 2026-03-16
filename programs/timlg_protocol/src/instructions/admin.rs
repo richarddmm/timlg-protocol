@@ -7,9 +7,12 @@ use anchor_spl::token::spl_token::instruction::AuthorityType;
 use crate::errors::TimlgError;
 use crate::state::{Config, RoundState};
 use crate::{
-    CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
+    CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeGlobalStats, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
     UpdateSolServiceFee, WithdrawTreasurySol, WithdrawTreasuryTokens, CloseConfig, MigrateConfig,
 };
+pub use crate::InitializeRoundRegistry;
+pub use crate::InitializeGlobalStats;
+pub use crate::InitializeTokenomics;
 use crate::InitializeTokenomics;
 use crate::UpdateTokenomics;
 use crate::VAULT_SEED;
@@ -489,3 +492,19 @@ pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
 }
 
 
+pub fn initialize_global_stats(ctx: Context<InitializeGlobalStats>) -> Result<()> {
+    let cfg = &ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+
+    let gs = &mut ctx.accounts.global_stats;
+    gs.bump = ctx.bumps.global_stats;
+    gs.total_tickets = 0;
+    gs.total_reveals = 0;
+    gs.total_wins = 0;
+    gs.total_sol_fees = 0;
+    gs.total_timlg_burned = 0;
+    gs.total_timlg_minted = 0;
+    gs.total_rounds_closed = 0;
+
+    Ok(())
+}

@@ -125,5 +125,9 @@ pub fn claim_reward(ctx: Context<ClaimReward>, _round_id: u64, _nonce: u64) -> R
         user_stats.tickets_claimed = user_stats.tickets_claimed.saturating_add(1);
     }
 
+    // global stats
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_timlg_minted = gs.total_timlg_minted.checked_add(reward_total).ok_or(TimlgError::MathOverflow)?;
+
     Ok(())
 }
