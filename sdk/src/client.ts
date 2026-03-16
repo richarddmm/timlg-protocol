@@ -937,6 +937,20 @@ export class TimlgAdmin extends TimlgBase {
       } as any)
       .rpc();
   }
+
+  async initializeGlobalStats(): Promise<string> {
+    const admin = (this.program.provider as anchor.AnchorProvider).wallet.publicKey;
+    const globalStatsPda = getPdaGlobalStats(this.program.programId);
+
+    return (this.program.methods as any)
+      .initializeGlobalStats()
+      .accounts({
+        globalStats: globalStatsPda,
+        admin,
+        systemProgram: SystemProgram.programId,
+      } as any)
+      .rpc();
+  }
 }
 
 /**
