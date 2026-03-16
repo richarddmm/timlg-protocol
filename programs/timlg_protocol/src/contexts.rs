@@ -826,20 +826,20 @@ pub struct CommitTicket<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     #[account(address = config.timlg_mint)]
-    pub timlg_mint: Account<'info, Mint>,
+    pub timlg_mint: Box<Account<'info, Mint>>,
 
     #[account(mut, address = round.timlg_vault)]
-    pub timlg_vault: Account<'info, TokenAccount>,
+    pub timlg_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -865,14 +865,14 @@ pub struct CommitTicket<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(
         mut,
         constraint = user_timlg_ata.mint == timlg_mint.key(),
         constraint = user_timlg_ata.owner == user.key()
     )]
-    pub user_timlg_ata: Account<'info, TokenAccount>,
+    pub user_timlg_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -888,7 +888,7 @@ pub struct CommitTicket<'info> {
         seeds = [crate::GLOBAL_STATS_SEED],
         bump = global_stats.bump,
     )]
-    pub global_stats: Account<'info, GlobalStats>,
+    pub global_stats: Box<Account<'info, GlobalStats>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -950,20 +950,20 @@ pub struct CommitBatch<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     #[account(address = config.timlg_mint)]
-    pub timlg_mint: Account<'info, Mint>,
+    pub timlg_mint: Box<Account<'info, Mint>>,
 
     #[account(mut, address = round.timlg_vault)]
-    pub timlg_vault: Account<'info, TokenAccount>,
+    pub timlg_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(mut)]
     pub user: Signer<'info>,
@@ -975,14 +975,14 @@ pub struct CommitBatch<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(
         mut,
         constraint = user_timlg_ata.mint == timlg_mint.key(),
         constraint = user_timlg_ata.owner == user.key()
     )]
-    pub user_timlg_ata: Account<'info, TokenAccount>,
+    pub user_timlg_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -998,7 +998,7 @@ pub struct CommitBatch<'info> {
         seeds = [crate::GLOBAL_STATS_SEED],
         bump = global_stats.bump,
     )]
-    pub global_stats: Account<'info, GlobalStats>,
+    pub global_stats: Box<Account<'info, GlobalStats>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -1011,14 +1011,14 @@ pub struct RevealBatch<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     #[account(mut)]
     pub user: Signer<'info>,
@@ -1030,14 +1030,14 @@ pub struct RevealBatch<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
         bump = global_stats.bump,
     )]
-    pub global_stats: Account<'info, GlobalStats>,
+    pub global_stats: Box<Account<'info, GlobalStats>>,
 
     pub system_program: Program<'info, System>,
 
@@ -1052,20 +1052,20 @@ pub struct CommitBatchSigned<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     #[account(address = config.timlg_mint)]
-    pub timlg_mint: Account<'info, Mint>,
+    pub timlg_mint: Box<Account<'info, Mint>>,
 
     #[account(mut, address = round.timlg_vault)]
-    pub timlg_vault: Account<'info, TokenAccount>,
+    pub timlg_vault: Box<Account<'info, TokenAccount>>,
 
     /// Relayer (paga fees)
     #[account(mut)]
@@ -1078,21 +1078,21 @@ pub struct CommitBatchSigned<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(
         mut,
         seeds = [crate::USER_ESCROW_SEED, user.key().as_ref()],
         bump = user_escrow.bump
     )]
-    pub user_escrow: Account<'info, UserEscrow>,
+    pub user_escrow: Box<Account<'info, UserEscrow>>,
 
     #[account(
         mut,
         seeds = [crate::USER_ESCROW_VAULT_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_escrow_ata: Account<'info, TokenAccount>,
+    pub user_escrow_ata: Box<Account<'info, TokenAccount>>,
 
     /// CHECK: user pubkey referenced in ed25519 msg
     pub user: UncheckedAccount<'info>,
@@ -1114,7 +1114,7 @@ pub struct CommitBatchSigned<'info> {
         seeds = [crate::GLOBAL_STATS_SEED],
         bump = global_stats.bump,
     )]
-    pub global_stats: Account<'info, GlobalStats>,
+    pub global_stats: Box<Account<'info, GlobalStats>>,
 
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -1127,14 +1127,14 @@ pub struct RevealBatchSigned<'info> {
         seeds = [crate::CONFIG_SEED],
         bump = config.bump
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         mut,
         seeds = [crate::ROUND_SEED, round_id.to_le_bytes().as_ref()],
         bump = round.bump
     )]
-    pub round: Account<'info, Round>,
+    pub round: Box<Account<'info, Round>>,
 
     /// Relayer paying tx fees (must sign tx)
     #[account(mut)]
@@ -1150,14 +1150,14 @@ pub struct RevealBatchSigned<'info> {
         seeds = [crate::USER_STATS_SEED, user.key().as_ref()],
         bump
     )]
-    pub user_stats: Account<'info, UserStats>,
+    pub user_stats: Box<Account<'info, UserStats>>,
 
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
         bump = global_stats.bump,
     )]
-    pub global_stats: Account<'info, GlobalStats>,
+    pub global_stats: Box<Account<'info, GlobalStats>>,
 
     pub system_program: Program<'info, System>,
 

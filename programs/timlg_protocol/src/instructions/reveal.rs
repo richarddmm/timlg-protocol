@@ -8,7 +8,7 @@ use crate::{
     state::{Round, Ticket},
     utils::{
         MAX_BATCH, TICKET_SEED, expected_reveal_msg, assert_ed25519_ix_matches, 
-        expected_commit_msg, reveal_core, RevealEntry, RevealSignedEntry
+        reveal_core, RevealEntry, RevealSignedEntry
     },
     RevealBatch, RevealBatchSigned, RevealTicket,
 };

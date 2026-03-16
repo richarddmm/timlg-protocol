@@ -7,8 +7,8 @@ use crate::constants::*;
 use crate::{TICKET_SEED, ROUND_SEED, VAULT_SEED, errors::TimlgError, state::RoundState};
 
 use crate::contexts::{
-    SettleRoundTokens, InitializeTokenomics, InitializeRoundRegistry, CreateRoundAuto,
-    ClaimReward, FinalizeRound, CloseRound, SweepUnclaimed, CloseTicket, RecoverFunds, RecoverFundsAnyone,
+    SettleRoundTokens,
+    FinalizeRound, CloseRound, SweepUnclaimed, CloseTicket, RecoverFunds, RecoverFundsAnyone,
     CloseUserStats
 };
 

@@ -103,6 +103,9 @@ pub fn commit_ticket(
     ticket.user_commit_index = user_commit_index;
 
     // counters
+    round.committed_count = round
+        .committed_count
+        .checked_add(1)
         .ok_or_else(|| error!(TimlgError::MathOverflow))?;
 
     // global stats
