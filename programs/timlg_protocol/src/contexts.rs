@@ -587,6 +587,13 @@ pub struct SetPulseMock<'info> {
     )]
     pub round: Account<'info, Round>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+    )]
+    pub global_stats: Option<Account<'info, GlobalStats>>,
+
     pub admin: Signer<'info>,
 }
 
