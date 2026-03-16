@@ -328,6 +328,10 @@ pub fn set_pulse_mock(
     round.pulse_set_slot = current_slot;
     round.state = RoundState::PulseSet as u8;
 
+    if let Some(gs) = &mut ctx.accounts.global_stats {
+        gs.total_pulses_published = gs.total_pulses_published.checked_add(1).unwrap_or(gs.total_pulses_published);
+    }
+
     Ok(())
 }
 
