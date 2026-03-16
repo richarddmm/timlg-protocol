@@ -194,6 +194,8 @@ pub struct GlobalStats {
     pub total_timlg_burned: u64,
     pub total_timlg_minted: u64,
     pub total_rounds_closed: u64,
+    pub total_rounds_created: u64,
+    pub total_pulses_published: u64,
 }
 
 #[account]

@@ -153,6 +153,13 @@ pub struct CreateRoundAuto<'info> {
     )]
     pub timlg_vault: Account<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+    )]
+    pub global_stats: Option<Account<'info, GlobalStats>>,
+
     #[account(mut)]
     pub admin: Signer<'info>,
 
@@ -520,6 +527,13 @@ pub struct CreateRound<'info> {
     )]
     pub timlg_vault: Account<'info, TokenAccount>,
 
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+    )]
+    pub global_stats: Option<Account<'info, GlobalStats>>,
+
     #[account(mut)]
     pub admin: Signer<'info>,
 
@@ -591,6 +605,13 @@ pub struct SetPulseSigned<'info> {
         bump = round.bump
     )]
     pub round: Account<'info, Round>,
+
+    #[account(
+        mut,
+        seeds = [crate::GLOBAL_STATS_SEED],
+        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+    )]
+    pub global_stats: Option<Account<'info, GlobalStats>>,
 
     /// CHECK: instruction sysvar (for ed25519 introspection). Address enforced.
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]

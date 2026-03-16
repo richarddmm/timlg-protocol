@@ -80,5 +80,9 @@ pub fn set_pulse_signed(ctx: Context<SetPulseSigned>, round_id: u64, pulse: [u8;
     round.pulse_set_slot = current_slot;
     round.state = RoundState::PulseSet as u8;
 
+    if let Some(gs) = &mut ctx.accounts.global_stats {
+        gs.total_pulses_published = gs.total_pulses_published.checked_add(1).unwrap_or(gs.total_pulses_published);
+    }
+
     Ok(())
 }
