@@ -882,6 +882,21 @@ export class TimlgAdmin extends TimlgBase {
       .rpc();
   }
 
+  async updateWindows(
+    commitWindowSlots: number | bigint,
+    revealWindowSlots: number | bigint
+  ): Promise<string> {
+    const admin = (this.program.provider as anchor.AnchorProvider).wallet.publicKey;
+    const configPda = getPdaConfig(this.program.programId);
+    return (this.program.methods as any)
+      .updateWindows(toBN(commitWindowSlots), toBN(revealWindowSlots))
+      .accounts({
+        config: configPda,
+        admin,
+      } as any)
+      .rpc();
+  }
+
   async initConfig(options: {
     stakeAmount: number | bigint;
     commitWindowSlots: number | bigint;

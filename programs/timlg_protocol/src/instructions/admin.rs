@@ -9,7 +9,7 @@ use crate::state::{Config, RoundState};
 use crate::{
     CreateRound, CreateRoundAuto, FundVault, InitializeConfig, InitializeGlobalStats, InitializeRoundRegistry, SetPause, UpdateStakeAmount,
     UpdateSolServiceFee, WithdrawTreasurySol, WithdrawTreasuryTokens, CloseConfig, MigrateConfig,
-    InitializeTokenomics, UpdateTokenomics,
+    InitializeTokenomics, UpdateTokenomics, UpdateWindows,
 };
 use crate::VAULT_SEED;
 use crate::constants::*;
