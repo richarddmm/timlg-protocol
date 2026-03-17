@@ -136,7 +136,7 @@ export function getPdaReplicationPool(programId: PublicKey, tokenomicsPda: Publi
  * Derives the GlobalStats PDA.
  */
 export function getPdaGlobalStats(programId: PublicKey): PublicKey {
-  const [pda] = PublicKey.findProgramAddressSync([Buffer.from("global_stats_v3")], programId);
+  const [pda] = PublicKey.findProgramAddressSync([Buffer.from("global_stats_v4")], programId);
   return pda;
 }
 
