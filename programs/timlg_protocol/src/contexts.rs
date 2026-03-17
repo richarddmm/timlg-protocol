@@ -156,7 +156,7 @@ pub struct CreateRoundAuto<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
     )]
     pub global_stats: Option<Account<'info, GlobalStats>>,
 
@@ -530,7 +530,7 @@ pub struct CreateRound<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
     )]
     pub global_stats: Option<Account<'info, GlobalStats>>,
 
@@ -590,7 +590,7 @@ pub struct SetPulseMock<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
     )]
     pub global_stats: Option<Account<'info, GlobalStats>>,
 
@@ -616,7 +616,7 @@ pub struct SetPulseSigned<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = global_stats.as_ref().map(|gs| gs.bump).unwrap_or(0),
+        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
     )]
     pub global_stats: Option<Account<'info, GlobalStats>>,
 
