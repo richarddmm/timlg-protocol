@@ -623,6 +623,9 @@ pub struct SetPulseSigned<'info> {
     /// CHECK: instruction sysvar (for ed25519 introspection). Address enforced.
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]
     pub instructions: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    pub admin: Signer<'info>,
 }
 
 #[derive(Accounts)]
