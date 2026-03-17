@@ -364,6 +364,20 @@ pub fn update_sol_service_fee(ctx: Context<UpdateSolServiceFee>, new_fee: u64) -
     Ok(())
 }
 
+pub fn update_windows(
+    ctx: Context<UpdateWindows>,
+    commit_window_slots: u64,
+    reveal_window_slots: u64,
+) -> Result<()> {
+    let cfg = &mut ctx.accounts.config;
+    require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);
+    
+    cfg.commit_window_slots = commit_window_slots;
+    cfg.reveal_window_slots = reveal_window_slots;
+    
+    Ok(())
+}
+
 pub fn withdraw_treasury_sol(ctx: Context<WithdrawTreasurySol>, amount: u64) -> Result<()> {
     let cfg = &ctx.accounts.config;
     require_keys_eq!(cfg.admin, ctx.accounts.admin.key(), TimlgError::Unauthorized);

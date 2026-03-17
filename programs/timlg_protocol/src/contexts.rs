@@ -334,6 +334,17 @@ pub struct SetClaimGraceSlots<'info> {
 }
 
 #[derive(Accounts)]
+pub struct UpdateWindows<'info> {
+    #[account(
+        mut,
+        seeds = [crate::CONFIG_SEED],
+        bump = config.bump
+    )]
+    pub config: Account<'info, Config>,
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct UpdateStakeAmount<'info> {
     #[account(
         mut,

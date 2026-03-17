@@ -437,11 +437,18 @@ export class TimlgSupervisor extends TimlgBase {
     // Note: Anchor will try to resolve PDAs automatically if possible, 
     // but some like 'round' and 'vault' depend on round_registry data.
     // In a professional SDK, we should fetch registry first or let anchor fail if they are missing.
+    const opts = options as any;
+    let mint = opts.timlgMint || opts.mint || opts.tokenMint;
+    if (!mint) {
+       const config = await this.fetchConfig();
+       mint = config.timlgMint;
+    }
+
     return (this.program.methods as any)
       .createRoundAuto(pulseTarget, commitDeadline, revealDeadline)
       .accounts({
         config: configPda,
-        timlgMint: options.timlgMint,
+        timlgMint: mint,
         roundRegistry: roundRegistryPda,
         globalStats: getPdaGlobalStats(this.program.programId),
         admin,
@@ -847,10 +854,10 @@ export class TimlgSupervisor extends TimlgBase {
       roundId,
       roundPda,
       state: stateMap[round.state] || `Unknown(${round.state})`,
-      pulseSet: round.pulseSet,
-      finalized: round.finalized,
-      tokenSettled: round.tokenSettled,
-      swept: round.swept,
+      pulseSet: !!round.pulseSet,
+      finalized: !!round.finalized,
+      tokenSettled: !!round.tokenSettled,
+      swept: !!round.swept,
       committedCount: round.committedCount?.toNumber?.() ?? 0,
       winCount: round.winCount?.toNumber?.() ?? 0,
       revealDeadlineSlot: round.revealDeadlineSlot?.toNumber?.() ?? 0,

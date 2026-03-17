@@ -3853,6 +3853,10 @@
       ],
       "accounts": [
         {
+          "name": "admin",
+          "signer": true
+        },
+        {
           "name": "config",
           "pda": {
             "seeds": [

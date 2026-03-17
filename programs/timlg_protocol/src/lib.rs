@@ -216,6 +216,14 @@ pub mod timlg_protocol {
         admin::update_sol_service_fee(ctx, new_fee)
     }
 
+    pub fn update_windows(
+        ctx: Context<UpdateWindows>,
+        commit_window_slots: u64,
+        reveal_window_slots: u64,
+    ) -> Result<()> {
+        admin::update_windows(ctx, commit_window_slots, reveal_window_slots)
+    }
+
     pub fn migrate_config(ctx: Context<MigrateConfig>) -> Result<()> {
         admin::migrate_config(ctx)
     }
