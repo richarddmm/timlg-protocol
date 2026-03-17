@@ -267,9 +267,8 @@ pub fn create_round(
     round.close_burn_done = false;
     round.close_unclaimed_mint_done = false;
 
-    if let Some(gs) = &mut ctx.accounts.global_stats {
-       gs.total_rounds_created = gs.total_rounds_created.checked_add(1).unwrap_or(gs.total_rounds_created);
-    }
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_rounds_created = gs.total_rounds_created.checked_add(1).unwrap_or(gs.total_rounds_created);
 
     Ok(())
 }
@@ -327,9 +326,8 @@ pub fn set_pulse_mock(
     round.pulse_set_slot = current_slot;
     round.state = RoundState::PulseSet as u8;
 
-    if let Some(gs) = &mut ctx.accounts.global_stats {
-        gs.total_pulses_published = gs.total_pulses_published.checked_add(1).unwrap_or(gs.total_pulses_published);
-    }
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_pulses_published = gs.total_pulses_published.checked_add(1).unwrap_or(gs.total_pulses_published);
 
     Ok(())
 }

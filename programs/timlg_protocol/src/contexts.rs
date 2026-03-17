@@ -156,9 +156,9 @@ pub struct CreateRoundAuto<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
+        bump = global_stats.bump,
     )]
-    pub global_stats: Option<Account<'info, GlobalStats>>,
+    pub global_stats: Account<'info, GlobalStats>,
 
     #[account(mut)]
     pub admin: Signer<'info>,
@@ -530,9 +530,9 @@ pub struct CreateRound<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
+        bump = global_stats.bump,
     )]
-    pub global_stats: Option<Account<'info, GlobalStats>>,
+    pub global_stats: Account<'info, GlobalStats>,
 
     #[account(mut)]
     pub admin: Signer<'info>,
@@ -590,9 +590,9 @@ pub struct SetPulseMock<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
+        bump = global_stats.bump,
     )]
-    pub global_stats: Option<Account<'info, GlobalStats>>,
+    pub global_stats: Account<'info, GlobalStats>,
 
     pub admin: Signer<'info>,
 }
@@ -616,9 +616,9 @@ pub struct SetPulseSigned<'info> {
     #[account(
         mut,
         seeds = [crate::GLOBAL_STATS_SEED],
-        bump = match &global_stats { Some(gs) => gs.bump, None => 0 },
+        bump = global_stats.bump,
     )]
-    pub global_stats: Option<Account<'info, GlobalStats>>,
+    pub global_stats: Account<'info, GlobalStats>,
 
     /// CHECK: instruction sysvar (for ed25519 introspection). Address enforced.
     #[account(address = anchor_lang::solana_program::sysvar::instructions::ID)]

@@ -169,6 +169,7 @@ export class TimlgPlayer extends TimlgBase {
         timlgVault: timlgVaultPda,
         userTimlgAta: userTimlgAta,
         treasurySol: treasurySolPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
       } as any)
@@ -232,6 +233,7 @@ export class TimlgPlayer extends TimlgBase {
         userStats: userStatsPda,
         userTimlgAta: userTimlgAta,
         treasurySol: treasurySolPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
       } as any)
@@ -284,6 +286,7 @@ export class TimlgPlayer extends TimlgBase {
         round: roundPda,
         user,
         userStats: userStatsPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         systemProgram: SystemProgram.programId,
       } as any)
       .remainingAccounts(
@@ -313,6 +316,7 @@ export class TimlgPlayer extends TimlgBase {
         round: roundPda,
         ticket: new PublicKey(receipt.ticketPda),
         user,
+        globalStats: getPdaGlobalStats(this.program.programId),
       } as any)
       .rpc();
   }
@@ -343,6 +347,7 @@ export class TimlgPlayer extends TimlgBase {
         timlgVault: timlgVaultPda,
         userTimlgAta: userTimlgAta,
         rewardFeePool: rewardFeePoolPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       } as any)
@@ -363,6 +368,7 @@ export class TimlgPlayer extends TimlgBase {
         ticket: new PublicKey(receipt.ticketPda),
         user,
         userStats: userStatsPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         systemProgram: SystemProgram.programId,
       } as any)
       .rpc();
@@ -387,6 +393,7 @@ export class TimlgPlayer extends TimlgBase {
         timlgVault: timlgVaultPda,
         userStats: userStatsPda,
         timlgMint: options.timlgMint,
+        globalStats: getPdaGlobalStats(this.program.programId),
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       } as any)
@@ -436,6 +443,7 @@ export class TimlgSupervisor extends TimlgBase {
         config: configPda,
         timlgMint: options.timlgMint,
         roundRegistry: roundRegistryPda,
+        globalStats: getPdaGlobalStats(this.program.programId),
         admin,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -569,6 +577,7 @@ export class TimlgSupervisor extends TimlgBase {
       .accounts({
         config: configPda,
         round: roundPda,
+        globalStats: getPdaGlobalStats(programId),
         instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
       .instruction();
@@ -604,6 +613,7 @@ export class TimlgSupervisor extends TimlgBase {
         replicationPool: replicationPoolPda,
         payer: admin,
         admin,
+        globalStats: getPdaGlobalStats(this.program.programId),
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
       } as any)
@@ -658,6 +668,7 @@ export class TimlgSupervisor extends TimlgBase {
         timlgVault: timlgVaultPda,
         timlgMint: options.timlgMint,
         admin,
+        globalStats: getPdaGlobalStats(this.program.programId),
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       } as any)
@@ -697,6 +708,7 @@ export class TimlgSupervisor extends TimlgBase {
         userStats: userStatsPda,
         timlgMint: options.timlgMint,
         cranker,
+        globalStats: getPdaGlobalStats(this.program.programId),
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       } as any)
