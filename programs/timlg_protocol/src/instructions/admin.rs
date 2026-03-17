@@ -135,9 +135,8 @@ pub fn create_round_auto(
     round.close_unclaimed_mint_done = false;
     rr.next_round_id = rr.next_round_id.checked_add(1).ok_or(TimlgError::MathOverflow)?;
 
-    if let Some(gs) = &mut ctx.accounts.global_stats {
-       gs.total_rounds_created = gs.total_rounds_created.checked_add(1).unwrap_or(gs.total_rounds_created);
-    }
+    let gs = &mut ctx.accounts.global_stats;
+    gs.total_rounds_created = gs.total_rounds_created.checked_add(1).unwrap_or(gs.total_rounds_created);
 
     Ok(())
 }
