@@ -10,6 +10,7 @@
     "module": "NodeNext",
     "target": "ESNext",
     "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
     "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
