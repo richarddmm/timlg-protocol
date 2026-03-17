@@ -535,6 +535,7 @@ export class TimlgSupervisor extends TimlgBase {
    * @param pulseIndexTarget The NIST pulse index that was targeted (from the round account)
    * @param pulse      64-byte NIST pulse (outputValue)
    * @param oracleKeypair  The keypair whose pubkey is registered on-chain as the oracle
+   * @param adminKeypair   The admin keypair required for the instruction
    * @param relayerKeypair Optional separate payer/relayer keypair (defaults to oracleKeypair)
    */
   async setPulseSigned(
@@ -542,6 +543,7 @@ export class TimlgSupervisor extends TimlgBase {
     pulseIndexTarget: number,
     pulse: Uint8Array,
     oracleKeypair: Keypair,
+    adminKeypair: Keypair,
     relayerKeypair?: Keypair
   ): Promise<string> {
     if (pulse.length !== 64) throw new Error(`pulse must be 64 bytes, got ${pulse.length}`);
@@ -579,14 +581,22 @@ export class TimlgSupervisor extends TimlgBase {
         round: roundPda,
         globalStats: getPdaGlobalStats(programId),
         instructions: SYSVAR_INSTRUCTIONS_PUBKEY,
+        admin: adminKeypair.publicKey,
       })
       .instruction();
 
     const tx = new Transaction().add(edIx, setPulseIx);
+    
+    // Signers list
+    const signers = [signer];
+    if (signer.publicKey.toBase58() !== adminKeypair.publicKey.toBase58()) {
+      signers.push(adminKeypair);
+    }
+
     const sig = await sendAndConfirmTransaction(
       this.connection,
       tx,
-      [signer],
+      signers,
       { commitment: "confirmed", skipPreflight: true }
     );
     return sig;
